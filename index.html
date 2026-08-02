@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>黄灿灿 Becky · 作品集</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#14243a;
+  --ink-60:rgba(20,36,58,.62);
+  --ink-45:rgba(20,36,58,.45);
+  --ink-30:rgba(20,36,58,.30);
+  --line:rgba(120,165,215,.30);
+  --line-soft:rgba(120,165,215,.18);
+  --accent:#3b6fd4;
+  --accent-lt:#5a93d8;
+  --card:rgba(255,255,255,.74);
+  --shadow:0 10px 30px rgba(56,110,180,.10);
+  --shadow-lg:0 22px 54px rgba(56,110,180,.20);
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --max:1180px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;color:var(--ink);
+  font-family:'Noto Sans SC',-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;
+  font-weight:400;line-height:1.7;
+  background:linear-gradient(180deg,#e8f1fb 0%,#f6fafd 42%,#ffffff 78%,#f7fbfe 100%);
+  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;
+  -webkit-text-size-adjust:100%;overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 32px}
+.mono{font-family:var(--mono);letter-spacing:.14em;font-size:10.5px;text-transform:uppercase}
+
+@keyframes tlFlow{to{background-position:0 18px}}
+@keyframes tlPing{75%,100%{transform:scale(2);opacity:0}}
+
+/* ---------- nav ---------- */
+header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(240,246,252,.74);border-bottom:1px solid var(--line-soft)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:62px}
+.brand{display:flex;align-items:baseline;gap:12px}
+.brand b{font-size:18px;font-weight:500;letter-spacing:.16em}
+.brand span{color:var(--accent);font-family:var(--mono);font-size:9.5px;letter-spacing:.18em}
+.navlinks{display:flex;align-items:center;gap:22px;font-size:13.5px;color:var(--ink-60)}
+.navlinks a:hover{color:var(--accent)}
+.lang{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:rgba(255,255,255,.7)}
+.lang button{border:none;background:transparent;padding:5px 12px;font-size:11.5px;color:var(--ink-45);cursor:pointer;
+  font-family:var(--mono);letter-spacing:.1em;transition:.2s}
+.lang button.on{background:linear-gradient(135deg,#4477d8,#5b9bd4);color:#fff}
+.btn{display:inline-block;padding:8px 17px;border-radius:999px;font-size:12.5px;color:#fff;
+  background:linear-gradient(135deg,#4477d8,#5b9bd4);box-shadow:0 6px 16px rgba(56,110,180,.28);
+  transition:transform .2s,box-shadow .2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(56,110,180,.34)}
+
+/* ---------- hero ---------- */
+.hero{display:grid;grid-template-columns:1fr .8fr;gap:38px;padding:38px 0 6px;align-items:start}
+.capcol{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:22px;padding-top:18px;border-top:1px solid var(--line-soft)}
+.capcol .cap{padding:0 18px;border-left:1px solid var(--line-soft)}
+.capcol .cap:first-child{border-left:none;padding-left:0}
+.cap h4{margin:0 0 5px;font-size:14px;font-weight:500;letter-spacing:.02em}
+.cap p{margin:0;font-size:11.5px;color:var(--ink-45);line-height:1.7}
+.name{font-size:clamp(46px,6.6vw,80px);font-weight:500;letter-spacing:.14em;line-height:1.05;margin:0}
+.name-en{margin-top:12px;font-family:var(--mono);font-size:11.5px;letter-spacing:.22em;color:var(--accent)}
+.edu{margin-top:30px;display:flex;flex-direction:column;gap:9px}
+.edu-row{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.edu-row .s1{font-size:20px;font-weight:500;letter-spacing:.03em}
+.edu-row .s2{font-size:16.5px;color:rgba(20,36,58,.84)}
+.edu-row time{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.08em}
+.mini{margin-top:20px;padding-top:16px;border-top:1px solid var(--line-soft);display:flex;flex-direction:column;gap:7px}
+.mini-row{display:flex;align-items:baseline;gap:10px;font-size:13px;color:var(--ink-60)}
+.mini-row b{font-weight:500;color:var(--ink)}
+.mini-row time{font-family:var(--mono);font-size:10.5px;color:var(--ink-30);letter-spacing:.06em;margin-left:auto}
+.portrait{position:relative;height:390px}
+.portrait .glow{position:absolute;inset:-40px -26px 16px;
+  background:radial-gradient(46% 46% at 54% 52%,rgba(118,172,228,.5),rgba(150,195,235,.18) 58%,rgba(255,255,255,0) 76%)}
+.portrait img{position:absolute;right:0;bottom:-16px;height:420px;width:auto;filter:saturate(.94);
+  transition:transform .7s cubic-bezier(.22,1,.36,1)}
+.portrait:hover img{transform:translateY(-12px)}
+
+/* ---------- sections ---------- */
+section{padding:54px 0 10px}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:26px}
+.sec-head .mono{color:var(--accent);opacity:.85}
+.sec-head h2{margin:7px 0 0;font-size:26px;font-weight:400;letter-spacing:.04em}
+.sec-head .hint{font-size:12.5px;color:var(--ink-45)}
+
+/* ---------- experience timeline ---------- */
+.tl{position:relative}
+.tl::before{content:'';position:absolute;left:140px;top:34px;bottom:34px;width:2px;
+  background-image:linear-gradient(180deg,var(--accent-lt) 0 9px,rgba(120,165,215,.2) 9px 18px);
+  background-size:2px 18px;animation:tlFlow 1.8s linear infinite}
+.tl-item{position:relative;display:grid;grid-template-columns:150px 1fr;gap:26px;margin-bottom:22px;cursor:pointer}
+.tl-date{text-align:right;padding:26px 26px 0 0}
+.tl-date .d1{font-family:var(--mono);font-size:12.5px;color:#3665c6;font-weight:500}
+.tl-date .d2{font-family:var(--mono);font-size:11px;color:var(--ink-45);margin-top:4px}
+.tl-date .loc{font-size:11.5px;color:var(--ink-45);margin-top:8px}
+.dot{position:absolute;left:134px;top:32px;width:15px;height:15px}
+.dot .ping{position:absolute;inset:-3px;border-radius:50%;background:#4a7fd0;opacity:.5;animation:tlPing 2.1s cubic-bezier(0,0,.2,1) infinite}
+.dot .core{position:absolute;inset:0;border-radius:50%;background:#4a7fd0;border:3px solid #fff;box-shadow:0 0 0 3px rgba(120,165,215,.28)}
+.tl-item.alt .dot .ping{display:none}
+.tl-item.alt .dot .core{background:#fff;border:3px solid #8db6e0;box-shadow:0 0 0 3px rgba(120,165,215,.2);transition:transform .3s}
+.tl-item.alt:hover .dot .core{transform:scale(1.25)}
+.tl-card{min-height:250px;padding:26px 30px;border-radius:16px;background:rgba(255,255,255,.78);
+  border:1px solid var(--line);transition:transform .28s cubic-bezier(.22,1,.36,1),box-shadow .28s}
+.tl-item:hover .tl-card{transform:translateY(-4px);box-shadow:0 18px 36px rgba(56,110,180,.16)}
+.tl-card .h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.tl-card .h b{font-size:21px;font-weight:500}
+.tl-card .h span{font-size:13px;color:var(--ink-60)}
+.tl-card .sum{font-size:13.5px;line-height:1.9;color:var(--ink-60);margin-top:12px;max-width:720px}
+.strip{display:flex;align-items:center;gap:8px;margin-top:16px}
+.strip img{width:84px;height:50px;object-fit:cover;border-radius:6px;border:1px solid var(--line);
+  box-shadow:0 3px 10px rgba(56,110,180,.10);transition:transform .3s}
+.tl-item:hover .strip img{transform:translateY(-2px)}
+.strip em{font-family:var(--mono);font-size:10px;font-style:normal;color:var(--ink-30);margin-left:4px}
+.tl-over{position:absolute;left:176px;right:0;top:0;bottom:0;padding:22px 26px;border-radius:16px;overflow:hidden;
+  display:flex;flex-direction:column;gap:9px;background:linear-gradient(120deg,rgba(19,48,88,.96),rgba(30,68,116,.94));
+  color:#fff;opacity:0;transition:opacity .32s;pointer-events:none}
+.tl-item:hover .tl-over{opacity:1}
+.tl-over .oh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.tl-over .oh b{font-size:17.5px;font-weight:500}
+.tl-over .oh time{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:rgba(255,255,255,.6)}
+.tl-over .cols{display:grid;grid-template-columns:1fr 1fr;gap:5px 22px;font-size:11.5px;line-height:1.62;color:rgba(255,255,255,.85)}
+.tl-over .cols i{font-style:normal;color:#9ecdf0}
+.tl-over .cta{display:flex;align-items:center;gap:12px;margin-top:auto}
+.tl-over .cta .go{padding:8px 14px;border-radius:999px;background:#fff;color:#2b5cae;font-size:12px;font-weight:500}
+.tl-over .cta em{font-family:var(--mono);font-size:10px;font-style:normal;letter-spacing:.12em;color:rgba(255,255,255,.55)}
+
+/* ---------- projects ---------- */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.card{position:relative;background:var(--card);border:1px solid var(--line-soft);border-radius:15px;overflow:hidden;
+  box-shadow:var(--shadow);transition:transform .25s,box-shadow .25s,border-color .25s;cursor:pointer;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--line)}
+.card .shot{position:relative;aspect-ratio:16/9;overflow:hidden;background:#eef4fa}
+.card .shot img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .55s}
+.card:hover .shot img{transform:scale(1.05)}
+.card .body{padding:15px 17px 18px;display:flex;flex-direction:column;flex:1}
+.card .idx{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.card .idx span{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--accent);opacity:.85}
+.card .idx time{font-family:var(--mono);font-size:9.5px;color:var(--ink-30)}
+.card h3{margin:7px 0 0;font-size:15.5px;font-weight:500;line-height:1.5;letter-spacing:.02em}
+.card p{margin:9px 0 0;font-size:12px;color:var(--ink-60);line-height:1.8;flex:1}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:13px}
+.tags span{padding:3px 9px;border-radius:999px;background:rgba(120,165,215,.10);border:1px solid var(--line-soft);
+  font-size:10.5px;color:var(--ink-45)}
+.open{margin-top:13px;font-size:11.5px;color:var(--accent);opacity:0;transform:translateY(4px);transition:.25s}
+.card:hover .open{opacity:1;transform:none}
+
+/* ---------- footer ---------- */
+footer{margin-top:70px;padding:44px 0 34px;border-top:1px solid var(--line-soft)}
+.foot{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.foot h3{margin:8px 0 0;font-size:24px;font-weight:400;letter-spacing:.02em}
+.foot .c{font-size:13px;color:var(--ink-60);margin-top:8px}
+.copy{margin-top:30px;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--ink-30)}
+
+/* ---------- viewer ---------- */
+.viewer{position:fixed;inset:0;z-index:100;background:rgba(12,24,40,.82);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;padding:24px}
+.viewer.on{display:flex}
+.viewer-box{position:relative;width:min(1180px,96vw);height:min(90vh,940px);
+  background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.42)}
+.viewer iframe{width:100%;height:100%;border:none;display:block}
+.v-close{position:absolute;right:14px;top:14px;z-index:2;width:34px;height:34px;border:none;border-radius:50%;
+  background:rgba(20,36,58,.55);color:#fff;font-size:15px;line-height:34px;text-align:center;cursor:pointer;
+  backdrop-filter:blur(6px);transition:background .2s}
+.v-close:hover{background:rgba(20,36,58,.78)}
+
+@media(max-width:1080px){
+  .hero{grid-template-columns:1fr .8fr;gap:28px}
+  .capcol{grid-template-columns:repeat(2,1fr);gap:16px 0}
+  .capcol .cap:nth-child(3){border-left:none;padding-left:0}
+}
+@media(max-width:900px){
+  .hero{grid-template-columns:1fr;gap:24px}
+  .portrait{height:300px;order:-1}
+  .portrait img{height:320px;right:auto;left:50%;transform:translateX(-50%)}
+  .portrait:hover img{transform:translateX(-50%) translateY(-12px)}
+  .portrait .glow{inset:-24px 0 10px}
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .tl::before{left:6px}
+  .tl-item{grid-template-columns:1fr;gap:0}
+  .tl-date{text-align:left;padding:0 0 10px 28px;display:flex;align-items:baseline;gap:10px}
+  .tl-date .d2,.tl-date .loc{margin-top:0}
+  .dot{left:0;top:4px}
+  .tl-card{margin-left:28px;min-height:0}
+  .tl-over{display:none}
+  .tl-detail{display:block}
+}
+@media(max-width:640px){
+  .wrap{padding:0 18px}
+  .nav{height:56px}
+  .brand b{font-size:16px}
+  .brand span{display:none}
+  .navlinks{gap:12px}
+  .navlinks a:not(.btn){display:none}
+  .btn{padding:7px 13px;font-size:11.5px}
+  .lang button{padding:5px 9px;font-size:10.5px}
+  section{padding:40px 0 6px}
+  .hero{padding:26px 0 4px}
+  .name{font-size:40px;letter-spacing:.1em}
+  .name-en{font-size:10px;letter-spacing:.16em;margin-top:9px}
+  .edu{margin-top:20px}
+  .edu-row{gap:6px}
+  .edu-row .s1{font-size:17px}
+  .edu-row .s2{font-size:14.5px;line-height:1.6}
+  .edu-row time{font-size:10px}
+  .mini{margin-top:16px;padding-top:13px}
+  .mini-row{font-size:12px;gap:7px;flex-wrap:wrap}
+  .mini-row time{font-size:9.5px;margin-left:0;width:100%}
+  .capcol{grid-template-columns:1fr 1fr;gap:14px 0;margin-top:18px;padding-top:14px}
+  .capcol .cap{padding:0 12px}
+  .capcol .cap:nth-child(odd){border-left:none;padding-left:0}
+  .cap h4{font-size:13px}
+  .cap p{font-size:11px}
+  .portrait{height:250px}
+  .portrait img{height:268px}
+  .sec-head{flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:18px}
+  .sec-head h2{font-size:22px}
+  .sec-head .hint{font-size:11.5px}
+  .grid{grid-template-columns:1fr;gap:16px}
+  .card h3{font-size:15px}
+  .card p{font-size:11.5px}
+  .open{opacity:1;transform:none}
+  .tl-card{padding:18px 18px;margin-left:24px;border-radius:13px}
+  .tl-card .h b{font-size:18px}
+  .tl-card .h span{font-size:12px}
+  .tl-card .sum{font-size:12.5px;line-height:1.8}
+  .strip{gap:6px;flex-wrap:wrap}
+  .strip img{width:72px;height:43px}
+  .strip em{width:100%;margin-left:0}
+  .tl-detail{font-size:12px}
+  .foot{gap:18px}
+  .foot h3{font-size:19px;word-break:break-all}
+  .viewer{padding:0}
+  .viewer-box{width:100vw;height:100vh;border-radius:0}
+}
+
+/* 移动端展开的实习明细（桌面隐藏） */
+.tl-detail{display:none;margin-top:14px;padding-top:13px;border-top:1px solid var(--line-soft)}
+.tl-detail div{font-size:12.5px;line-height:1.75;color:var(--ink-60);margin-bottom:6px}
+.tl-detail i{font-style:normal;font-weight:500;color:var(--ink)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand"><b data-en="Portfolio">作品集</b><span>PORTFOLIO</span></div>
+    <nav class="navlinks">
+      <a href="#exp" data-en="Experience">实习</a>
+      <a href="#work" data-en="Projects">项目</a>
+      <div class="lang"><button id="lz" class="on">中文</button><button id="le">EN</button></div>
+      <a class="btn" href="pdf/黄灿灿-简历.pdf" target="_blank" data-en="Resume PDF ↓">简历 PDF ↓</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ HERO ============ -->
+<div class="wrap">
+  <div class="hero" id="about">
+
+    <div>
+      <h1 class="name" data-en="Becky Huang">黄灿灿</h1>
+      <div class="name-en" data-en="HUANG CANCAN">BECKY · HUANG CANCAN</div>
+
+      <div class="edu">
+        <div class="edu-row">
+          <span class="s1" data-en="The University of Hong Kong · MSc Low-altitude Technology">香港大学 · 低空技术 硕士</span>
+          <time>2025.09 – 2026.12</time>
+        </div>
+        <div class="edu-row">
+          <span class="s2" data-en="UC San Diego · BS Interaction Design + BA Computing & Arts">加州大学圣地亚哥分校 · 交互设计 BS + 计算与艺术 BA</span>
+          <time data-en="Graduated 2024.09">2024.09 毕业</time>
+        </div>
+      </div>
+
+      <div class="mini">
+        <div class="mini-row"><b data-en="Shenzhen Institute for Innovation">深圳科创学院</b><span data-en="Product Design & Research Intern">产品设计调研实习</span><time>2026.05 – 至今</time></div>
+        <div class="mini-row"><b data-en="Mango TV">芒果 TV</b><span data-en="Content Analytics Intern">内容分析实习</span><time>2024.09 – 2024.12</time></div>
+      </div>
+
+    <div class="capcol">
+      <div class="cap"><h4 data-en="User Research">用户研究</h4><p data-en="Interview · Persona<br>Journey Map · KANO">访谈 · Persona<br>旅程图 · KANO</p></div>
+      <div class="cap"><h4 data-en="Product Definition">产品定义</h4><p data-en="Opportunity · Positioning<br>Trade-offs · Competitors">机会点 · 定位<br>功能取舍 · 竞品</p></div>
+      <div class="cap"><h4 data-en="HW–SW Integration">软硬协同</h4><p data-en="Drone · eVTOL<br>VR · Multi-platform">无人机 · eVTOL<br>VR · 多端方案</p></div>
+      <div class="cap"><h4 data-en="Prototyping">原型实现</h4><p data-en="Arduino · TouchDesigner<br>UE · 3D Print · AI Coding">Arduino · TouchDesigner<br>UE · 3D 打印 · AI 编程</p></div>
+    </div>
+    </div>
+
+    <div class="portrait">
+      <div class="glow"></div>
+      <img src="covers/portrait.png" alt="黄灿灿 Becky">
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ EXPERIENCE ============ -->
+<section class="wrap" id="exp">
+  <div class="sec-head">
+    <div><div class="mono">Experience</div><h2 data-en="Internships">实习经历</h2></div>
+    <div class="hint" data-en="Hover for details · click to open">鼠标移入查看完整内容 · 点击打开项目</div>
+  </div>
+
+  <div class="tl">
+
+    <div class="tl-item" data-pdf="pdf/实习-深圳科创学院.pdf">
+      <div class="tl-date">
+        <div class="d1">2026.05</div>
+        <div class="d2" data-en="– Present">– 至今</div>
+        <div class="loc" data-en="Shenzhen">深圳</div>
+      </div>
+      <div class="dot"><span class="ping"></span><span class="core"></span></div>
+      <div class="tl-card">
+        <div class="h"><b data-en="Shenzhen Institute for Innovation">深圳科创学院</b><span data-en="Project Center · Product Design & Research Intern">项目中心 · 产品设计调研实习</span></div>
+        <div class="sum" data-en="Ran end-to-end product teardowns with the Double Diamond, built the research method toolkit, owned the academy's content platforms and startup scenario visualisation, and supported industry research, project coaching and events.">沿双钻模型完成产品全链路拆解与用研方法沉淀，负责学院对外内容平台与在孵团队场景可视化，并支持行业调研、项目辅导与活动执行。</div>
+        <div class="strip">
+          <img src="covers/strip/szii-1.jpg" alt="">
+          <img src="covers/strip/szii-2.jpg" alt="">
+          <img src="covers/strip/szii-3.jpg" alt="">
+          <em data-en="Scenario map · Toolkits · Archive site · Reports">场景图 · 工具图 · 记录站 · 调研报告</em>
+        </div>
+      </div>
+      </div>
+              <div class="tl-detail">
+          <div><i data-en="Product teardown · ">产品案例拆解 · </i><span data-en="Rebuilt DJI Osmo Pocket and a crowdfunded mower from opportunity to mass production with the Double Diamond; used DFV / ERRC / JTBD / KANO to unpack positioning and feature trade-offs, and built the competitor matrix and lifecycle curve.">沿双钻还原大疆 Osmo Pocket、来牟众筹割草机从机会点到量产全链路；用 DFV / ERRC / JTBD / KANO 拆解定位与功能取舍，搭建竞品矩阵与生命周期曲线</span></div>
+          <div><i data-en="Research methods · ">用研方法沉淀 · </i><span data-en="Designed 10+ bilingual method toolkits including journey map, persona, KANO, behaviour funnel and AEIOU; built the overseas research framework and OM-PMF delivery checklist.">设计旅程图、Persona、KANO、行为漏斗、AEIOU 等 10+ 张中英双语工具图；搭建海外用研框架、OM-PMF 里程碑与交付 Checklist</span></div>
+          <div><i data-en="Visualisation & platform · ">可视化与内容平台 · </i><span data-en="Delivered the overall application-scenario map for incubated teams plus 8 sector pages; independently built 2 academy archive sites in HTML with AI coding, defining information architecture and UI.">完成在孵团队场景总图与 8 个赛道分页图；独立用 AI 编程以 HTML 搭建 2 个学院内容记录站，规划四大模块信息架构与 UI</span></div>
+          <div><i data-en="Research & coaching · ">调研与项目辅导 · </i><span data-en="Produced 8 industry research reports and 3 founder profiles; kept 5+ Office Hour records for portfolio projects; ran 3 event surveys collecting 300+ responses.">完成 8 份行业与调研报告、3 份创业者画像；跟进项目 Office Hour 纪要 5+ 份；投放 3 份活动问卷回收 300+ 人次反馈</span></div>
+        </div>
+      </div>
+      <div class="tl-over">
+        <div class="oh"><b data-en="Shenzhen Institute for Innovation · Project Center">深圳科创学院 · 项目中心</b><time data-en="2026.05 – Present">2026.05 – 至今</time></div>
+        <div class="cols">
+          <div><i data-en="Product teardown · ">产品案例拆解 · </i><span data-en="Rebuilt DJI Osmo Pocket and a crowdfunded mower from opportunity to mass production with the Double Diamond; used DFV / ERRC / JTBD / KANO to unpack positioning and feature trade-offs, and built the competitor matrix and lifecycle curve.">沿双钻还原大疆 Osmo Pocket、来牟众筹割草机从机会点到量产全链路；用 DFV / ERRC / JTBD / KANO 拆解定位与功能取舍，搭建竞品矩阵与生命周期曲线</span></div>
+          <div><i data-en="Research methods · ">用研方法沉淀 · </i><span data-en="Designed 10+ bilingual method toolkits including journey map, persona, KANO, behaviour funnel and AEIOU; built the overseas research framework and OM-PMF delivery checklist.">设计旅程图、Persona、KANO、行为漏斗、AEIOU 等 10+ 张中英双语工具图；搭建海外用研框架、OM-PMF 里程碑与交付 Checklist</span></div>
+          <div><i data-en="Visualisation & platform · ">可视化与内容平台 · </i><span data-en="Delivered the overall application-scenario map for incubated teams plus 8 sector pages; independently built 2 academy archive sites in HTML with AI coding, defining information architecture and UI.">完成在孵团队场景总图与 8 个赛道分页图；独立用 AI 编程以 HTML 搭建 2 个学院内容记录站，规划四大模块信息架构与 UI</span></div>
+          <div><i data-en="Research & coaching · ">调研与项目辅导 · </i><span data-en="Produced 8 industry research reports and 3 founder profiles; kept 5+ Office Hour records for portfolio projects; ran 3 event surveys collecting 300+ responses.">完成 8 份行业与调研报告、3 份创业者画像；跟进项目 Office Hour 纪要 5+ 份；投放 3 份活动问卷回收 300+ 人次反馈</span></div>
+        </div>
+        <div class="cta"><span class="go" data-en="Open project →">打开项目 →</span><em data-en="Teardown · Research · 2.5D Visualisation · Content platform">产品拆解 · 用户研究 · 2.5D 可视化 · 内容平台</em></div>
+      </div>
+    </div>
+
+    <div class="tl-item alt" data-pdf="pdf/实习-芒果TV.pdf">
+      <div class="tl-date">
+        <div class="d1">2024.09</div>
+        <div class="d2">– 2024.12</div>
+        <div class="loc" data-en="Changsha">长沙</div>
+      </div>
+      <div class="dot"><span class="ping"></span><span class="core"></span></div>
+      <div class="tl-card">
+        <div class="h"><b data-en="Mango TV">芒果 TV</b><span data-en="Data Management · Content Analytics Intern">数据管理部门 · 内容分析实习</span></div>
+        <div class="sum" data-en="Collected and analysed drama and variety-show data, delivered metric analysis and visualisation to support content and competitor judgement, and contributed to analytics reports and quarterly reviews.">负责剧集与综艺的数据采集、指标分析与可视化，支持内容与竞品分析，并参与多部剧综的数据分析报告与季度复盘。</div>
+        <div class="strip">
+          <img src="covers/strip/mango-1.jpg" alt="">
+          <em data-en="Persona · Retention & payment · Report charts">用户画像 · 留存付费 · 报告图表</em>
+        </div>
+              <div class="tl-detail">
+          <div><i data-en="Data collection · ">数据采集与处理 · </i><span data-en="Gathered drama and variety data across the analytics platform, four major video platforms and Weibo to support content and competitor analysis.">通过数据分析平台及四大视频平台、微博等渠道收集剧集与综艺数据，支持内容与竞品分析</span></div>
+          <div><i data-en="Analysis & visualisation · ">分析与可视化 · </i><span data-en="Used Excel and Python to analyse persona, new-user acquisition, retention and payment performance, and produced visual charts.">使用 Excel、Python 分析用户画像、新增获取率、留存率与付费表现，输出可视化图表</span></div>
+          <div><i data-en="Reporting · ">报告支持 · </i><span data-en="Contributed to analytics reports for 5+ dramas and variety shows and supported quarterly and annual review materials.">参与 5+ 部剧集 / 综艺数据分析报告，协助完成季度及年度复盘材料与结论梳理</span></div>
+          <div><i data-en="Collaboration · ">协作 · </i><span data-en="Aligned metric definitions with content and operations teams, turning data conclusions into structured material for content decisions.">与内容与运营团队对齐分析口径，把数据结论转化为可用于内容判断的结构化材料</span></div>
+        </div>
+      </div>
+      <div class="tl-over">
+        <div class="oh"><b data-en="Mango TV · Data Management">芒果 TV · 数据管理部门</b><time>2024.09 – 2024.12</time></div>
+        <div class="cols">
+          <div><i data-en="Data collection · ">数据采集与处理 · </i><span data-en="Gathered drama and variety data across the analytics platform, four major video platforms and Weibo to support content and competitor analysis.">通过数据分析平台及四大视频平台、微博等渠道收集剧集与综艺数据，支持内容与竞品分析</span></div>
+          <div><i data-en="Analysis & visualisation · ">分析与可视化 · </i><span data-en="Used Excel and Python to analyse persona, new-user acquisition, retention and payment performance, and produced visual charts.">使用 Excel、Python 分析用户画像、新增获取率、留存率与付费表现，输出可视化图表</span></div>
+          <div><i data-en="Reporting · ">报告支持 · </i><span data-en="Contributed to analytics reports for 5+ dramas and variety shows and supported quarterly and annual review materials.">参与 5+ 部剧集 / 综艺数据分析报告，协助完成季度及年度复盘材料与结论梳理</span></div>
+          <div><i data-en="Collaboration · ">协作 · </i><span data-en="Aligned metric definitions with content and operations teams, turning data conclusions into structured material for content decisions.">与内容与运营团队对齐分析口径，把数据结论转化为可用于内容判断的结构化材料</span></div>
+        </div>
+        <div class="cta"><span class="go" data-en="Open project →">打开项目 →</span><em data-en="Data analysis · Content insight · Visualisation">数据分析 · 内容洞察 · 可视化</em></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ PROJECTS ============ -->
+<section class="wrap" id="work">
+  <div class="sec-head">
+    <div><div class="mono">Projects</div><h2 data-en="Projects">项目详情</h2></div>
+    <div class="hint" data-en="Click a card to view the full deck">点击卡片查看完整内容</div>
+  </div>
+
+  <div class="grid">
+
+    <article class="card" data-pdf="pdf/硕士论文-大湾区低空空域.pdf">
+      <div class="shot"><img src="covers/thesis.jpg" alt=""></div>
+      <div class="body">
+        <div class="idx"><span>01 / Thesis</span><time>2026</time></div>
+        <h3 data-en="Low-altitude Airspace Governance in the GBA">大湾区低空空域治理与跨境协调机制</h3>
+        <p data-en="Compared airspace classes, UAV categories, restricted zones and approval lead times across the Mainland, Hong Kong and Macau to locate the gaps where the three systems cannot interoperate; unified the airspace structure into one diagram and turned an adaptive-airspace coordination layer into a digital flow of intent submission, airspace verification, time-window assessment and compliance monitoring.">对照内地、香港、澳门三地空域分类、无人机分级、限飞区与审批时限，定位三套体系无法自动衔接的监管缝隙；整合统一空域图示，并把自适应空域协调层转化为意图提交、空域核验、时间窗判定与合规监视的数字流程。</p>
+        <div class="tags"><span data-en="Airspace">低空空域</span><span data-en="Cross-border">跨境协调</span><span data-en="Regulation">规则对照</span></div>
+        <div class="open" data-en="Open project →">打开项目 →</div>
+      </div>
+    </article>
+
+    <article class="card" data-pdf="pdf/Vertiport-Planner.pdf">
+      <div class="shot"><img src="covers/vertiport.jpg" alt=""></div>
+      <div class="body">
+        <div class="idx"><span>02 / Vertiport</span><time>2026</time></div>
+        <h3 data-en="Vertiport Planner · Site Selection Platform">Vertiport Planner 垂直起降场选址平台</h3>
+        <p data-en="For the policy-driven low-altitude economy, the platform combines urban data, airspace conditions, regulatory constraints, infrastructure readiness and aircraft requirements into one scoring framework, producing a ranked shortlist, score breakdown and planning recommendation from siting through approval.">面向政策驱动的低空经济市场，把城市数据、空域条件、法规约束、基础设施与机型要求整合为统一评分框架，输出候选场址排序、得分拆解与规划建议，支撑从选址到审批的决策链路。</p>
+        <div class="tags"><span data-en="Low-altitude">低空经济</span><span data-en="Site decision">选址决策</span><span data-en="Platform">平台产品</span></div>
+        <div class="open" data-en="Open project →">打开项目 →</div>
+      </div>
+    </article>
+
+    <article class="card" data-pdf="pdf/双座eVTOL-座舱显示设计.pdf">
+      <div class="shot"><img src="covers/evtol.jpg" alt=""></div>
+      <div class="body">
+        <div class="idx"><span>03 / eVTOL</span><time>2025.10 – 12</time></div>
+        <h3 data-en="2-Seater eVTOL Cockpit Information Logic">双座 eVTOL 座舱信息呈现逻辑梳理</h3>
+        <p data-en="Mapped the mode-transition logic across hover, transition and cruise, defining what must stay visible at a glance in each phase; set information grouping and colour coding, and filtered prompts by flight phase so only currently relevant content remains.">梳理悬停 / 转换 / 巡航的模式切换逻辑，定义每个阶段必须一眼可见的关键信息；确定信息分组与颜色编码，按飞行阶段分级过滤提示，只保留当下相关内容以降低操作负荷。</p>
+        <div class="tags"><span>HMI</span><span data-en="Readability">状态可读性</span><span data-en="Information priority">信息优先级</span></div>
+        <div class="open" data-en="Open project →">打开项目 →</div>
+      </div>
+    </article>
+
+    <article class="card" data-pdf="pdf/FIREFINDER-森林消防无人机.pdf">
+      <div class="shot"><img src="covers/firefinder.jpg" alt=""></div>
+      <div class="body">
+        <div class="idx"><span>04 / Firefinder</span><time>2024.06 – 11</time></div>
+        <h3 data-en="FIREFINDER Wildfire Response Drone System">FIREFINDER 森林消防无人机</h3>
+        <p data-en="For high-risk wildfire rescue, the system breaks down monitoring, fire-point locating, aerial delivery and endurance resupply, and pairs surveillance drones, firefighting drones, charging docks and a retardant conversion module into a closed operating loop.">面向森林火灾救援场景，拆解监测预警、火点定位、空中投送与续航补给等核心任务，设计由监测无人机、灭火无人机、充能桩与灭火材料转换模块组成的作业闭环。</p>
+        <div class="tags"><span data-en="System design">系统设计</span><span data-en="Task breakdown">任务拆解</span><span data-en="Hardware">硬件方案</span></div>
+        <div class="open" data-en="Open project →">打开项目 →</div>
+      </div>
+    </article>
+
+    <article class="card" data-pdf="pdf/HOSPITALE-交互式桌游.pdf">
+      <div class="shot"><img src="covers/hospitale.jpg" alt=""></div>
+      <div class="body">
+        <div class="idx"><span>05 / Hospitale</span><time>2024.02 – 07</time></div>
+        <h3 data-en="HOSPITALE Interactive Board Game">HOSPITALE 交互式桌游设计</h3>
+        <p data-en="Uses a board game to surface ethical conflict and decision pressure inside healthcare systems, designing interaction around roles, information access, choice paths and feedback; TouchDesigner and Arduino link the digital interface with the physical installation.">以桌游表达医疗体系中的伦理冲突与决策压力，围绕角色、信息获取、选择路径与反馈结果设计交互流程；用 TouchDesigner 与 Arduino 实现数字界面与实体装置联动。</p>
+        <div class="tags"><span data-en="Experience design">体验设计</span><span>TouchDesigner</span><span>Arduino</span></div>
+        <div class="open" data-en="Open project →">打开项目 →</div>
+      </div>
+    </article>
+
+    <article class="card" data-pdf="pdf/老年人VR相机.pdf">
+      <div class="shot"><img src="covers/silverlens.jpg" alt=""></div>
+      <div class="body">
+        <div class="idx"><span>06 / Senior Tourism</span><time>2023.09 – 12</time></div>
+        <h3 data-en="VR Camera & Travel Service for Older Adults">老年人 VR 相机与旅游服务</h3>
+        <p data-en="Identified older travellers' pain points in trips and memory-keeping through in-depth interviews, personas and journey maps, then designed a travel service app with a companion VR camera covering itinerary planning, community and trip recording.">通过深度访谈、用户画像与旅程图识别中老年用户在出行与记录环节的痛点，设计旅游服务 App 与配套 VR 相机方案，覆盖行程规划、社区互动与旅途记录。</p>
+        <div class="tags"><span data-en="User research">用户研究</span><span data-en="HW + SW">软硬结合</span><span data-en="Service design">服务设计</span></div>
+        <div class="open" data-en="Open project →">打开项目 →</div>
+      </div>
+    </article>
+
+    <article class="card" data-pdf="pdf/Utopian-Life-互动游戏.pdf">
+      <div class="shot"><img src="covers/utopian.jpg" alt=""></div>
+      <div class="body">
+        <div class="idx"><span>07 / Utopian Life</span><time>2023.09 – 2024.01</time></div>
+        <h3 data-en="Utopian Life Interactive Game">Utopian Life 互动游戏设计</h3>
+        <p data-en="Built game mechanics, mission flow and scene experience around AI ethics and future-society themes, with levels made in Unreal Engine; an Arduino and 3D-printed wearable links the player's physical actions to in-game feedback.">围绕 AI 伦理与未来社会议题设计游戏机制、任务流程与场景体验，用 UE 搭建关卡；结合 Arduino 与 3D 打印制作穿戴式装置，实现玩家实体动作与游戏反馈联动。</p>
+        <div class="tags"><span data-en="Game design">游戏设计</span><span>Unreal Engine</span><span data-en="Wearable">穿戴装置</span></div>
+        <div class="open" data-en="Open project →">打开项目 →</div>
+      </div>
+    </article>
+
+    <article class="card" data-pdf="pdf/ProPlan-宠物品牌方案.pdf">
+      <div class="shot"><img src="covers/proplan.jpg" alt=""></div>
+      <div class="body">
+        <div class="idx"><span>08 / ProPlan</span><time>2026</time></div>
+        <h3 data-en="ProPlan PetsLife Brand Digitalisation">ProPlan PetsLife 宠物品牌数字化方案</h3>
+        <p data-en="Addresses a brand that is 'scientific but distant': unpacks where novice pet owners drop off cognitively and behaviourally, and designs a product plan that turns scientific feeding into daily interaction and long-term companionship (Nestlé business competition).">针对"科学喂养专业但疏离"的品牌问题，拆解新手养宠人群的认知与行为断点，设计把科学喂养转化为日常互动与长期陪伴的产品方案（雀巢商业竞赛）。</p>
+        <div class="tags"><span data-en="Brand strategy">品牌策略</span><span data-en="User insight">用户洞察</span><span data-en="Competition">商业竞赛</span></div>
+        <div class="open" data-en="Open project →">打开项目 →</div>
+      </div>
+    </article>
+
+    <article class="card" data-pdf="pdf/其他作品-UCSD.pdf">
+      <div class="shot"><img src="covers/others.jpg" alt=""></div>
+      <div class="body">
+        <div class="idx"><span>09 / Others</span><time>2024</time></div>
+        <h3 data-en="Other Works: VR Diagnosis & Music Game">其他作品：VR 辅助诊断与音乐游戏</h3>
+        <p data-en="A gamified VR aid for hemispatial neglect diagnosis, plus the VIS147A music game and other interactive experiments from UCSD.">半侧空间忽略（Hemispatial Neglect）游戏化 VR 辅助诊断方案，以及 VIS147A 音乐游戏等在 UCSD 期间的交互与实验性作品合集。</p>
+        <div class="tags"><span data-en="VR healthcare">VR 医疗</span><span data-en="Gamification">游戏化</span><span data-en="Experiments">交互实验</span></div>
+        <div class="open" data-en="Open project →">打开项目 →</div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div>
+      <div class="mono" style="color:var(--accent)">Contact</div>
+      <h3>2713911064@qq.com</h3>
+      <div class="c" data-en="15092783537 · Hong Kong / Shenzhen">15092783537 · 香港 / 深圳</div>
+    </div>
+    <a class="btn" href="pdf/黄灿灿-简历.pdf" target="_blank" data-en="Download Resume ↓">下载简历 PDF ↓</a>
+  </div>
+  <div class="wrap copy">© 2026 HUANG CANCAN · BECKY</div>
+</footer>
+
+<!-- ============ VIEWER ============ -->
+<div class="viewer" id="viewer">
+  <div class="viewer-box">
+    <button class="v-close" id="v-close" aria-label="close">✕</button>
+    <iframe id="v-frame" title="project"></iframe>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* ---------- PDF viewer ---------- */
+  var viewer=document.getElementById('viewer'), frame=document.getElementById('v-frame');
+  var isMobile = window.matchMedia('(max-width:820px)').matches ||
+                 /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  function open(pdf){
+    if(isMobile){ window.open(pdf,'_blank'); return; }   // 手机端直接用系统 PDF 浏览
+    frame.src=pdf+'#toolbar=0&navpanes=0&statusbar=0&view=FitH';
+    viewer.classList.add('on'); document.body.style.overflow='hidden';
+  }
+  function close(){ viewer.classList.remove('on'); frame.src=''; document.body.style.overflow=''; }
+  document.querySelectorAll('[data-pdf]').forEach(function(el){
+    el.addEventListener('click',function(){ open(el.dataset.pdf); });
+  });
+  document.getElementById('v-close').addEventListener('click',close);
+  viewer.addEventListener('click',function(e){ if(e.target===viewer) close(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') close(); });
+
+  /* ---------- language toggle ---------- */
+  var nodes=document.querySelectorAll('[data-en]');
+  nodes.forEach(function(el){ el.dataset.zh=el.innerHTML; });
+  var bz=document.getElementById('lz'), be=document.getElementById('le');
+  function setLang(l){
+    nodes.forEach(function(el){ el.innerHTML = (l==='en') ? el.dataset.en : el.dataset.zh; });
+    document.documentElement.lang = (l==='en') ? 'en' : 'zh-CN';
+    bz.classList.toggle('on', l!=='en'); be.classList.toggle('on', l==='en');
+  }
+  bz.addEventListener('click',function(){ setLang('zh'); });
+  be.addEventListener('click',function(){ setLang('en'); });
+
+  /* ---------- reveal ---------- */
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ e.target.style.opacity=1; e.target.style.transform='none'; io.unobserve(e.target);} });
+  },{threshold:.08});
+  document.querySelectorAll('.card,.tl-item').forEach(function(el){
+    el.style.opacity=0; el.style.transform='translateY(14px)';
+    el.style.transition='opacity .6s ease,transform .6s ease';
+    io.observe(el);
+  });
+})();
+</script>
+</body>
+</html>
