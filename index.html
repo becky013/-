@@ -60,11 +60,11 @@ header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rg
 
 /* ---------- hero ---------- */
 .hero{display:grid;grid-template-columns:1fr .8fr;gap:38px;padding:38px 0 6px;align-items:start}
-.capcol{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:22px;padding-top:18px;border-top:1px solid var(--line-soft)}
-.capcol .cap{padding:0 18px;border-left:1px solid var(--line-soft)}
+.capcol{display:grid;grid-template-columns:1fr 1fr 1fr 1.34fr;gap:0;margin-top:22px;padding-top:18px;border-top:1px solid var(--line-soft)}
+.capcol .cap{padding:0 16px;border-left:1px solid var(--line-soft)}
 .capcol .cap:first-child{border-left:none;padding-left:0}
 .cap h4{margin:0 0 5px;font-size:14px;font-weight:500;letter-spacing:.02em}
-.cap p{margin:0;font-size:11.5px;color:var(--ink-45);line-height:1.7}
+.cap p{margin:0;font-size:11.5px;color:var(--ink-45);line-height:1.7;white-space:nowrap}
 .name{font-size:clamp(46px,6.6vw,80px);font-weight:500;letter-spacing:.14em;line-height:1.05;margin:0}
 .name-en{margin-top:12px;font-family:var(--mono);font-size:11.5px;letter-spacing:.22em;color:var(--accent)}
 .edu{margin-top:30px;display:flex;flex-direction:column;gap:9px}
@@ -178,6 +178,7 @@ footer{margin-top:70px;padding:44px 0 34px;border-top:1px solid var(--line-soft)
 @media(max-width:1080px){
   .hero{grid-template-columns:1fr .8fr;gap:28px}
   .capcol{grid-template-columns:repeat(2,1fr);gap:16px 0}
+  .cap p{white-space:normal}
   .capcol .cap:nth-child(3){border-left:none;padding-left:0}
 }
 @media(max-width:900px){
@@ -335,9 +336,7 @@ footer{margin-top:70px;padding:44px 0 34px;border-top:1px solid var(--line-soft)
           <img src="covers/strip/szii-3.jpg" alt="">
           <em data-en="Scenario map · Toolkits · Archive site · Reports">场景图 · 工具图 · 记录站 · 调研报告</em>
         </div>
-      </div>
-      </div>
-              <div class="tl-detail">
+        <div class="tl-detail">
           <div><i data-en="Product teardown · ">产品案例拆解 · </i><span data-en="Rebuilt DJI Osmo Pocket and a crowdfunded mower from opportunity to mass production with the Double Diamond; used DFV / ERRC / JTBD / KANO to unpack positioning and feature trade-offs, and built the competitor matrix and lifecycle curve.">沿双钻还原大疆 Osmo Pocket、来牟众筹割草机从机会点到量产全链路；用 DFV / ERRC / JTBD / KANO 拆解定位与功能取舍，搭建竞品矩阵与生命周期曲线</span></div>
           <div><i data-en="Research methods · ">用研方法沉淀 · </i><span data-en="Designed 10+ bilingual method toolkits including journey map, persona, KANO, behaviour funnel and AEIOU; built the overseas research framework and OM-PMF delivery checklist.">设计旅程图、Persona、KANO、行为漏斗、AEIOU 等 10+ 张中英双语工具图；搭建海外用研框架、OM-PMF 里程碑与交付 Checklist</span></div>
           <div><i data-en="Visualisation & platform · ">可视化与内容平台 · </i><span data-en="Delivered the overall application-scenario map for incubated teams plus 8 sector pages; independently built 2 academy archive sites in HTML with AI coding, defining information architecture and UI.">完成在孵团队场景总图与 8 个赛道分页图；独立用 AI 编程以 HTML 搭建 2 个学院内容记录站，规划四大模块信息架构与 UI</span></div>
@@ -405,8 +404,8 @@ footer{margin-top:70px;padding:44px 0 34px;border-top:1px solid var(--line-soft)
       <div class="shot"><img src="covers/thesis.jpg" alt=""></div>
       <div class="body">
         <div class="idx"><span>01 / Thesis</span><time>2026</time></div>
-        <h3 data-en="Low-altitude Airspace Governance in the GBA">大湾区低空空域治理与跨境协调机制</h3>
-        <p data-en="Compared airspace classes, UAV categories, restricted zones and approval lead times across the Mainland, Hong Kong and Macau to locate the gaps where the three systems cannot interoperate; unified the airspace structure into one diagram and turned an adaptive-airspace coordination layer into a digital flow of intent submission, airspace verification, time-window assessment and compliance monitoring.">对照内地、香港、澳门三地空域分类、无人机分级、限飞区与审批时限，定位三套体系无法自动衔接的监管缝隙；整合统一空域图示，并把自适应空域协调层转化为意图提交、空域核验、时间窗判定与合规监视的数字流程。</p>
+        <h3 data-en="Automation-Ready Airspace &amp; Cross-border Coordination Layer in the GBA">大湾区面向自动化运行的空域与跨境协调层</h3>
+        <p data-en="Introduces the “Class X airspace” concept from Automated Flight Rules (AFR) literature as a theoretical reference for two challenges in the Greater Bay Area — three parallel aviation regulatory systems, and the automated, high-density low-altitude operations of the future — then explores how to design a cross-border low-altitude coordination layer suited to the region.">引入自动飞行规则（AFR）文献中的“X 类空域”这一未来空域概念，作为应对粤港澳大湾区两大挑战的理论参考——三套并行的航空监管体系，以及未来自动化、高密度的低空运行；在此基础上探讨如何设计适用于大湾区的跨境低空协调层。</p>
         <div class="tags"><span data-en="Airspace">低空空域</span><span data-en="Cross-border">跨境协调</span><span data-en="Regulation">规则对照</span></div>
         <div class="open" data-en="Open project →">打开项目 →</div>
       </div>
@@ -626,5 +625,6 @@ footer{margin-top:70px;padding:44px 0 34px;border-top:1px solid var(--line-soft)
   });
 })();
 </script>
+<script src="pet/cat.js"></script>
 </body>
 </html>
