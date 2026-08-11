@@ -159,23 +159,27 @@
       'I will keep you company — take your time'
     ]
   };
-  var lineIdx = 0, bubbleTimer = null, hoverTimer = null;
+  var lineIdx = 0, bubbleTimer = null, hoverTimer = null, firstTap = true;
+  var FIRST = { zh: '在电脑上打开，查看效果更好哦～', en: 'It looks even better on a desktop~' };
 
   function isEN() { return (document.documentElement.lang || '').toLowerCase().indexOf('en') === 0; }
 
   function say() {
-    var arr = LINES[isEN() ? 'en' : 'zh'];
+    var lang = isEN() ? 'en' : 'zh';
+    var arr = LINES[lang];
+    var line;
+    if (MOBILE && firstTap) { line = FIRST[lang]; firstTap = false; }
+    else { line = arr[lineIdx % arr.length]; lineIdx++; }
     bubble.innerHTML = '';
     var paw = document.createElement('span');
     paw.className = 'cp-paw';
     paw.style.backgroundImage = 'url("' + SP + 'paw_r.png")';
     var txt = document.createElement('span');
-    txt.textContent = arr[lineIdx % arr.length];
+    txt.textContent = line;
     var d1 = document.createElement('i'); d1.className = 'cp-dot';
     var d2 = document.createElement('i'); d2.className = 'cp-dot2';
     bubble.appendChild(paw); bubble.appendChild(txt);
     bubble.appendChild(d1); bubble.appendChild(d2);
-    lineIdx++;
     bubble.classList.remove('show');
     void bubble.offsetWidth;          // 重启动画
     bubble.classList.add('show');

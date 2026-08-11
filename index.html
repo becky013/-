@@ -148,8 +148,32 @@ section{padding:54px 0 10px}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:13px}
 .tags span{padding:3px 9px;border-radius:999px;background:rgba(120,165,215,.10);border:1px solid var(--line-soft);
   font-size:10.5px;color:var(--ink-45)}
-.open{margin-top:13px;font-size:11.5px;color:var(--accent);opacity:0;transform:translateY(4px);transition:.25s}
+.cta-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:13px}
+.open{font-size:11.5px;color:var(--accent);opacity:0;transform:translateY(4px);transition:.25s}
 .card:hover .open{opacity:1;transform:none}
+.demo{display:inline-block;padding:4px 11px;border-radius:999px;font-size:11px;color:var(--accent);
+  background:rgba(120,165,215,.12);border:1px solid var(--line);transition:background .2s,transform .2s}
+.demo:hover{background:rgba(120,165,215,.22);transform:translateY(-1px)}
+@keyframes demoPulse{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.35);opacity:.35}}
+.demos{display:flex;align-items:center;gap:12px 18px;flex-wrap:wrap;margin-top:20px;padding:14px 16px;
+  border-radius:14px;border:1px solid var(--line);
+  background:linear-gradient(120deg,rgba(120,165,215,.16),rgba(255,255,255,.55));
+  box-shadow:0 6px 20px rgba(56,110,180,.10)}
+.demos .lb{flex:0 0 100%;display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;
+  letter-spacing:.04em;color:var(--accent);margin-bottom:2px}
+.demos .lb i{width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;
+  animation:demoPulse 1.8s ease-in-out infinite}
+.demo-group{display:inline-flex;align-items:center;gap:8px;flex:0 1 auto;min-width:0}
+.demo-pill{white-space:nowrap}
+.demo-pill{display:inline-flex;align-items:center;padding:7px 15px;border-radius:999px;font-size:12.5px;
+  background:#fff;border:1px solid var(--line);color:var(--ink);font-weight:500;
+  box-shadow:0 3px 10px rgba(56,110,180,.10);transition:transform .2s,box-shadow .2s,border-color .2s,color .2s}
+.demo-pill:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(56,110,180,.20);
+  border-color:var(--accent);color:var(--accent)}
+.demo-more{font-size:11.5px;color:var(--ink-45);white-space:nowrap;border-bottom:1px dashed var(--line);padding-bottom:1px}
+.demo-more:hover{color:var(--accent);border-color:var(--accent)}
+.card{scroll-margin-top:92px}
+.card:target{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,111,212,.16),var(--shadow-lg)}
 
 /* ---------- footer ---------- */
 footer{margin-top:70px;padding:44px 0 34px;border-top:1px solid var(--line-soft)}
@@ -301,6 +325,18 @@ footer{margin-top:70px;padding:44px 0 34px;border-top:1px solid var(--line-soft)
       <div class="cap"><h4 data-en="HW–SW Integration">软硬协同</h4><p data-en="Drone · eVTOL<br>VR · Multi-platform">无人机 · eVTOL<br>VR · 多端方案</p></div>
       <div class="cap"><h4 data-en="Prototyping">原型实现</h4><p data-en="Arduino · TouchDesigner<br>UE · 3D Print · AI Coding">Arduino · TouchDesigner<br>UE · 3D 打印 · AI 编程</p></div>
     </div>
+
+      <div class="demos">
+        <span class="lb"><i></i><span data-en="Try the Vibe Coding Demos">体验 Vibe Coding Demo</span></span>
+        <span class="demo-group">
+          <a class="demo-pill" href="https://becky013.github.io/-OS/" target="_blank" rel="noopener">ProPlan · App Demo ↗</a>
+          <a class="demo-more" href="#p-proplan" data-en="Details ↓">详情 ↓</a>
+        </span>
+        <span class="demo-group">
+          <a class="demo-pill" href="https://becky013.github.io/vertiport-planner/" target="_blank" rel="noopener">Vertiport · Web Demo（更新版）↗</a>
+          <a class="demo-more" href="#p-vertiport" data-en="Details ↓">详情 ↓</a>
+        </span>
+      </div>
     </div>
 
     <div class="portrait">
@@ -411,14 +447,14 @@ footer{margin-top:70px;padding:44px 0 34px;border-top:1px solid var(--line-soft)
       </div>
     </article>
 
-    <article class="card" data-pdf="pdf/Vertiport-Planner.pdf">
+    <article class="card" id="p-vertiport" data-pdf="pdf/Vertiport-Planner.pdf">
       <div class="shot"><img src="covers/vertiport.jpg" alt=""></div>
       <div class="body">
         <div class="idx"><span>02 / Vertiport</span><time>2026</time></div>
         <h3 data-en="Vertiport Planner · Site Selection Platform">Vertiport Planner 垂直起降场选址平台</h3>
         <p data-en="For the policy-driven low-altitude economy, the platform combines urban data, airspace conditions, regulatory constraints, infrastructure readiness and aircraft requirements into one scoring framework, producing a ranked shortlist, score breakdown and planning recommendation from siting through approval.">面向政策驱动的低空经济市场，把城市数据、空域条件、法规约束、基础设施与机型要求整合为统一评分框架，输出候选场址排序、得分拆解与规划建议，支撑从选址到审批的决策链路。</p>
         <div class="tags"><span data-en="Low-altitude">低空经济</span><span data-en="Site decision">选址决策</span><span data-en="Platform">平台产品</span></div>
-        <div class="open" data-en="Open project →">打开项目 →</div>
+        <div class="cta-row"><div class="open" data-en="Open project →">打开项目 →</div><a class="demo" href="https://becky013.github.io/vertiport-planner/" target="_blank" rel="noopener" data-en="Try Web Demo (Updated) ↗">体验 Web Demo（更新版）↗</a></div>
       </div>
     </article>
 
@@ -477,14 +513,14 @@ footer{margin-top:70px;padding:44px 0 34px;border-top:1px solid var(--line-soft)
       </div>
     </article>
 
-    <article class="card" data-pdf="pdf/ProPlan-宠物品牌方案.pdf">
+    <article class="card" id="p-proplan" data-pdf="pdf/ProPlan-宠物品牌方案.pdf">
       <div class="shot"><img src="covers/proplan.jpg" alt=""></div>
       <div class="body">
         <div class="idx"><span>08 / ProPlan</span><time>2026</time></div>
         <h3 data-en="ProPlan PetsLife Brand Digitalisation">ProPlan PetsLife 宠物品牌数字化方案</h3>
         <p data-en="Addresses a brand that is 'scientific but distant': unpacks where novice pet owners drop off cognitively and behaviourally, and designs a product plan that turns scientific feeding into daily interaction and long-term companionship (Nestlé business competition).">针对"科学喂养专业但疏离"的品牌问题，拆解新手养宠人群的认知与行为断点，设计把科学喂养转化为日常互动与长期陪伴的产品方案（雀巢商业竞赛）。</p>
         <div class="tags"><span data-en="Brand strategy">品牌策略</span><span data-en="User insight">用户洞察</span><span data-en="Competition">商业竞赛</span></div>
-        <div class="open" data-en="Open project →">打开项目 →</div>
+        <div class="cta-row"><div class="open" data-en="Open project →">打开项目 →</div><a class="demo" href="https://becky013.github.io/-OS/" target="_blank" rel="noopener" data-en="Try App Demo ↗">体验 App Demo ↗</a></div>
       </div>
     </article>
 
@@ -595,6 +631,9 @@ footer{margin-top:70px;padding:44px 0 34px;border-top:1px solid var(--line-soft)
     viewer.classList.remove('on'); frame.src=''; pages.innerHTML='';
     document.body.style.overflow='';
   }
+  document.querySelectorAll('.demo').forEach(function(a){
+    a.addEventListener('click',function(e){ e.stopPropagation(); });
+  });
   document.querySelectorAll('[data-pdf]').forEach(function(el){
     el.addEventListener('click',function(){ open(el.dataset.pdf); });
   });
