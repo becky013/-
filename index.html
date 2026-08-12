@@ -164,6 +164,7 @@ section{padding:54px 0 10px}
 .demos .lb i{width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;
   animation:demoPulse 1.8s ease-in-out infinite}
 .demo-group{display:inline-flex;align-items:center;gap:8px;flex:0 1 auto;min-width:0}
+.demo-group.row2{flex:0 0 100%;flex-wrap:wrap}
 .demo-pill{white-space:nowrap}
 .demo-pill{display:inline-flex;align-items:center;padding:7px 15px;border-radius:999px;font-size:12.5px;
   background:#fff;border:1px solid var(--line);color:var(--ink);font-weight:500;
@@ -172,7 +173,32 @@ section{padding:54px 0 10px}
   border-color:var(--accent);color:var(--accent)}
 .demo-more{font-size:11.5px;color:var(--ink-45);white-space:nowrap;border-bottom:1px dashed var(--line);padding-bottom:1px}
 .demo-more:hover{color:var(--accent);border-color:var(--accent)}
+.demo-pair{flex:0 0 100%;display:flex;align-items:center;gap:7px;flex-wrap:nowrap}
+.demo-pair .demo{padding:4px 9px;font-size:10.5px;white-space:nowrap}
 .card{scroll-margin-top:92px}
+
+/* ---------- 其他 / mini cards ---------- */
+.sub-head{display:flex;align-items:baseline;justify-content:space-between;gap:18px;
+  margin:38px 0 18px;padding-top:24px;border-top:1px solid var(--line-soft)}
+.sub-head h3{margin:0;font-size:18px;font-weight:400;letter-spacing:.08em;color:var(--ink)}
+.sub-head .hint{font-size:11.5px;color:var(--ink-45)}
+.mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.card.mini .shot{aspect-ratio:16/10}
+.card.mini .body{padding:12px 15px 15px}
+.card.mini .idx span{font-size:9px}
+.card.mini h3{margin:6px 0 0;font-size:13.5px;line-height:1.5}
+.card.mini .mini-top{position:relative;display:flex;flex-direction:column;flex:1;color:inherit}
+.mini-foot{padding:0 15px 15px;display:flex}
+.mini-over{position:absolute;inset:0;display:flex;align-items:center;padding:18px 18px;
+  background:linear-gradient(150deg,rgba(46,80,130,.95),rgba(28,50,85,.95));
+  opacity:0;transition:opacity .28s ease;pointer-events:none}
+.mini-over p{margin:0;font-size:11.5px;line-height:1.8;color:rgba(255,255,255,.92)}
+.card.mini:hover .mini-over{opacity:1}
+.card.mini .mini-over p{max-height:100%;overflow:auto}
+@media (hover:none){
+  .mini-over{position:static;opacity:1;background:none;padding:0 15px 15px;align-items:flex-start}
+  .mini-over p{color:var(--ink-60);font-size:12px;line-height:1.8}
+}
 .card:target{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,111,212,.16),var(--shadow-lg)}
 
 /* ---------- footer ---------- */
@@ -210,7 +236,7 @@ footer{margin-top:70px;padding:44px 0 34px;border-top:1px solid var(--line-soft)
   .portrait{height:250px}
   .portrait img{height:250px;right:-6px}
   .portrait .glow{inset:-18px -10px 8px}
-  .grid{grid-template-columns:repeat(2,1fr)}
+  .grid,.mini-grid{grid-template-columns:repeat(2,1fr)}
   .tl::before{left:6px}
   .tl-item{grid-template-columns:1fr;gap:0}
   .tl-date{text-align:left;padding:0 0 10px 28px;display:flex;align-items:baseline;gap:10px}
@@ -255,7 +281,7 @@ footer{margin-top:70px;padding:44px 0 34px;border-top:1px solid var(--line-soft)
   .sec-head{flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:18px}
   .sec-head h2{font-size:22px}
   .sec-head .hint{font-size:11.5px}
-  .grid{grid-template-columns:1fr;gap:16px}
+  .grid,.mini-grid{grid-template-columns:1fr;gap:16px}
   .card h3{font-size:15px}
   .card p{font-size:11.5px}
   .open{opacity:1;transform:none}
@@ -329,12 +355,21 @@ footer{margin-top:70px;padding:44px 0 34px;border-top:1px solid var(--line-soft)
       <div class="demos">
         <span class="lb"><i></i><span data-en="Try the Vibe Coding Demos">体验 Vibe Coding Demo</span></span>
         <span class="demo-group">
+          <a class="demo-pill" href="https://becky013.github.io/vertiport-planner/" target="_blank" rel="noopener">Vertiport · Web Demo（更新版）↗</a>
+          <a class="demo-more" href="#p-vertiport" data-en="Details ↓">详情 ↓</a>
+        </span>
+        <span class="demo-group">
           <a class="demo-pill" href="https://becky013.github.io/-OS/" target="_blank" rel="noopener">ProPlan · App Demo ↗</a>
           <a class="demo-more" href="#p-proplan" data-en="Details ↓">详情 ↓</a>
         </span>
+        <span class="demo-group row2">
+          <a class="demo-pill" href="https://becky013.github.io/SkyLink/" target="_blank" rel="noopener">SkyLink · 住户 App Demo ↗</a>
+          <a class="demo-pill" href="https://becky013.github.io/SkyLink_Web/" target="_blank" rel="noopener">SkyLink · 物业 Web 端 Demo ↗</a>
+          <a class="demo-more" href="#p-dliver" data-en="Details ↓">详情 ↓</a>
+        </span>
         <span class="demo-group">
-          <a class="demo-pill" href="https://becky013.github.io/vertiport-planner/" target="_blank" rel="noopener">Vertiport · Web Demo（更新版）↗</a>
-          <a class="demo-more" href="#p-vertiport" data-en="Details ↓">详情 ↓</a>
+          <a class="demo-pill" href="https://becky013.github.io/travelplan/" target="_blank" rel="noopener">飞省 Web Demo ↗</a>
+          <a class="demo-more" href="#p-travelplan" data-en="Details ↓">详情 ↓</a>
         </span>
       </div>
     </div>
@@ -436,21 +471,10 @@ footer{margin-top:70px;padding:44px 0 34px;border-top:1px solid var(--line-soft)
 
   <div class="grid">
 
-    <article class="card" data-pdf="pdf/硕士论文-大湾区低空空域.pdf">
-      <div class="shot"><img src="covers/thesis.jpg" alt=""></div>
-      <div class="body">
-        <div class="idx"><span>01 / Thesis</span><time>2026</time></div>
-        <h3 data-en="Automation-Ready Airspace &amp; Cross-border Coordination Layer in the GBA">大湾区面向自动化运行的空域与跨境协调层</h3>
-        <p data-en="Introduces the “Class X airspace” concept from Automated Flight Rules (AFR) literature as a theoretical reference for two challenges in the Greater Bay Area — three parallel aviation regulatory systems, and the automated, high-density low-altitude operations of the future — then explores how to design a cross-border low-altitude coordination layer suited to the region.">引入自动飞行规则（AFR）文献中的“X 类空域”这一未来空域概念，作为应对粤港澳大湾区两大挑战的理论参考——三套并行的航空监管体系，以及未来自动化、高密度的低空运行；在此基础上探讨如何设计适用于大湾区的跨境低空协调层。</p>
-        <div class="tags"><span data-en="Airspace">低空空域</span><span data-en="Cross-border">跨境协调</span><span data-en="Regulation">规则对照</span></div>
-        <div class="open" data-en="Open project →">打开项目 →</div>
-      </div>
-    </article>
-
     <article class="card" id="p-vertiport" data-pdf="pdf/Vertiport-Planner.pdf">
       <div class="shot"><img src="covers/vertiport.jpg" alt=""></div>
       <div class="body">
-        <div class="idx"><span>02 / Vertiport</span><time>2026</time></div>
+        <div class="idx"><span>01 / Vertiport</span><time>2026</time></div>
         <h3 data-en="Vertiport Planner · Site Selection Platform">Vertiport Planner 垂直起降场选址平台</h3>
         <p data-en="For the policy-driven low-altitude economy, the platform combines urban data, airspace conditions, regulatory constraints, infrastructure readiness and aircraft requirements into one scoring framework, producing a ranked shortlist, score breakdown and planning recommendation from siting through approval.">面向政策驱动的低空经济市场，把城市数据、空域条件、法规约束、基础设施与机型要求整合为统一评分框架，输出候选场址排序、得分拆解与规划建议，支撑从选址到审批的决策链路。</p>
         <div class="tags"><span data-en="Low-altitude">低空经济</span><span data-en="Site decision">选址决策</span><span data-en="Platform">平台产品</span></div>
@@ -458,32 +482,21 @@ footer{margin-top:70px;padding:44px 0 34px;border-top:1px solid var(--line-soft)
       </div>
     </article>
 
-    <article class="card" data-pdf="pdf/双座eVTOL-座舱显示设计.pdf">
-      <div class="shot"><img src="covers/evtol.jpg" alt=""></div>
+    <article class="card" id="p-dliver" data-pdf="pdf/D-LIVER-无人机社区服务.pdf">
+      <div class="shot"><img src="covers/dliver.jpg" alt=""></div>
       <div class="body">
-        <div class="idx"><span>03 / eVTOL</span><time>2025.10 – 12</time></div>
-        <h3 data-en="2-Seater eVTOL Cockpit Information Logic">双座 eVTOL 座舱信息呈现逻辑梳理</h3>
-        <p data-en="Mapped the mode-transition logic across hover, transition and cruise, defining what must stay visible at a glance in each phase; set information grouping and colour coding, and filtered prompts by flight phase so only currently relevant content remains.">梳理悬停 / 转换 / 巡航的模式切换逻辑，定义每个阶段必须一眼可见的关键信息；确定信息分组与颜色编码，按飞行阶段分级过滤提示，只保留当下相关内容以降低操作负荷。</p>
-        <div class="tags"><span>HMI</span><span data-en="Readability">状态可读性</span><span data-en="Information priority">信息优先级</span></div>
-        <div class="open" data-en="Open project →">打开项目 →</div>
-      </div>
-    </article>
-
-    <article class="card" data-pdf="pdf/FIREFINDER-森林消防无人机.pdf">
-      <div class="shot"><img src="covers/firefinder.jpg" alt=""></div>
-      <div class="body">
-        <div class="idx"><span>04 / Firefinder</span><time>2024.06 – 11</time></div>
-        <h3 data-en="FIREFINDER Wildfire Response Drone System">FIREFINDER 森林消防无人机</h3>
-        <p data-en="For high-risk wildfire rescue, the system breaks down monitoring, fire-point locating, aerial delivery and endurance resupply, and pairs surveillance drones, firefighting drones, charging docks and a retardant conversion module into a closed operating loop.">面向森林火灾救援场景，拆解监测预警、火点定位、空中投送与续航补给等核心任务，设计由监测无人机、灭火无人机、充能桩与灭火材料转换模块组成的作业闭环。</p>
-        <div class="tags"><span data-en="System design">系统设计</span><span data-en="Task breakdown">任务拆解</span><span data-en="Hardware">硬件方案</span></div>
-        <div class="open" data-en="Open project →">打开项目 →</div>
+        <div class="idx"><span>02 / D-LIVER</span><time>2025.09 &ndash; 11</time></div>
+        <h3 data-en="D-LIVER &middot; Drone-Assisted Community Living">D-LIVER 无人机社区服务系统设计</h3>
+        <p data-en="For high-density residential estates in the Greater Bay Area, mapped the pain points and main flows of community delivery and safety inspection and positioned the service against existing options; designed a window-to-window drone service covering the merchant side, resident app and management portal, together with the landing pad and detachable cargo pod that make the last 100 metres work.">面向大湾区高密度住宅场景梳理社区配送与安防巡检的痛点与主流程，完成竞品调研与差异化定位；设计“窗口直达”的社区无人机服务体系，输出商家端、住户 App 与管理门户的三端协同流程，并配套落地平台与可分离货舱的硬件方案。</p>
+        <div class="tags"><span data-en="Product plan">产品方案</span><span data-en="Three-end flow">三端协同</span><span data-en="HW + SW">软硬结合</span></div>
+        <div class="cta-row"><div class="open" data-en="Open project &rarr;">打开项目 →</div><span class="demo-pair"><a class="demo" href="https://becky013.github.io/SkyLink/" target="_blank" rel="noopener" data-en="Try Resident App Demo ↗">体验住户 App Demo ↗</a><a class="demo" href="https://becky013.github.io/SkyLink_Web/" target="_blank" rel="noopener" data-en="Try Property Web Demo ↗">体验物业 Web 端 Demo ↗</a></span></div>
       </div>
     </article>
 
     <article class="card" data-pdf="pdf/HOSPITALE-交互式桌游.pdf">
       <div class="shot"><img src="covers/hospitale.jpg" alt=""></div>
       <div class="body">
-        <div class="idx"><span>05 / Hospitale</span><time>2024.02 – 07</time></div>
+        <div class="idx"><span>03 / Hospitale</span><time>2024.02 – 07</time></div>
         <h3 data-en="HOSPITALE Interactive Board Game">HOSPITALE 交互式桌游设计</h3>
         <p data-en="Uses a board game to surface ethical conflict and decision pressure inside healthcare systems, designing interaction around roles, information access, choice paths and feedback; TouchDesigner and Arduino link the digital interface with the physical installation.">以桌游表达医疗体系中的伦理冲突与决策压力，围绕角色、信息获取、选择路径与反馈结果设计交互流程；用 TouchDesigner 与 Arduino 实现数字界面与实体装置联动。</p>
         <div class="tags"><span data-en="Experience design">体验设计</span><span>TouchDesigner</span><span>Arduino</span></div>
@@ -494,7 +507,7 @@ footer{margin-top:70px;padding:44px 0 34px;border-top:1px solid var(--line-soft)
     <article class="card" data-pdf="pdf/老年人VR相机.pdf">
       <div class="shot"><img src="covers/silverlens.jpg" alt=""></div>
       <div class="body">
-        <div class="idx"><span>06 / Senior Tourism</span><time>2023.09 – 12</time></div>
+        <div class="idx"><span>04 / Senior Tourism</span><time>2023.09 – 12</time></div>
         <h3 data-en="VR Camera & Travel Service for Older Adults">老年人 VR 相机与旅游服务</h3>
         <p data-en="Identified older travellers' pain points in trips and memory-keeping through in-depth interviews, personas and journey maps, then designed a travel service app with a companion VR camera covering itinerary planning, community and trip recording.">通过深度访谈、用户画像与旅程图识别中老年用户在出行与记录环节的痛点，设计旅游服务 App 与配套 VR 相机方案，覆盖行程规划、社区互动与旅途记录。</p>
         <div class="tags"><span data-en="User research">用户研究</span><span data-en="HW + SW">软硬结合</span><span data-en="Service design">服务设计</span></div>
@@ -505,7 +518,7 @@ footer{margin-top:70px;padding:44px 0 34px;border-top:1px solid var(--line-soft)
     <article class="card" data-pdf="pdf/Utopian-Life-互动游戏.pdf">
       <div class="shot"><img src="covers/utopian.jpg" alt=""></div>
       <div class="body">
-        <div class="idx"><span>07 / Utopian Life</span><time>2023.09 – 2024.01</time></div>
+        <div class="idx"><span>05 / Utopian Life</span><time>2023.09 – 2024.01</time></div>
         <h3 data-en="Utopian Life Interactive Game">Utopian Life 互动游戏设计</h3>
         <p data-en="Built game mechanics, mission flow and scene experience around AI ethics and future-society themes, with levels made in Unreal Engine; an Arduino and 3D-printed wearable links the player's physical actions to in-game feedback.">围绕 AI 伦理与未来社会议题设计游戏机制、任务流程与场景体验，用 UE 搭建关卡；结合 Arduino 与 3D 打印制作穿戴式装置，实现玩家实体动作与游戏反馈联动。</p>
         <div class="tags"><span data-en="Game design">游戏设计</span><span>Unreal Engine</span><span data-en="Wearable">穿戴装置</span></div>
@@ -516,11 +529,33 @@ footer{margin-top:70px;padding:44px 0 34px;border-top:1px solid var(--line-soft)
     <article class="card" id="p-proplan" data-pdf="pdf/ProPlan-宠物品牌方案.pdf">
       <div class="shot"><img src="covers/proplan.jpg" alt=""></div>
       <div class="body">
-        <div class="idx"><span>08 / ProPlan</span><time>2026</time></div>
+        <div class="idx"><span>06 / ProPlan</span><time>2026</time></div>
         <h3 data-en="ProPlan PetsLife Brand Digitalisation">ProPlan PetsLife 宠物品牌数字化方案</h3>
-        <p data-en="Addresses a brand that is 'scientific but distant': unpacks where novice pet owners drop off cognitively and behaviourally, and designs a product plan that turns scientific feeding into daily interaction and long-term companionship (Nestlé business competition).">针对"科学喂养专业但疏离"的品牌问题，拆解新手养宠人群的认知与行为断点，设计把科学喂养转化为日常互动与长期陪伴的产品方案（雀巢商业竞赛）。</p>
-        <div class="tags"><span data-en="Brand strategy">品牌策略</span><span data-en="User insight">用户洞察</span><span data-en="Competition">商业竞赛</span></div>
+        <p data-en="Addresses a brand that is 'scientific but distant': unpacks where novice pet owners drop off cognitively and behaviourally, and designs a product plan that turns scientific feeding into daily interaction and long-term companionship.">针对"科学喂养专业但疏离"的品牌问题，拆解新手养宠人群的认知与行为断点，设计把科学喂养转化为日常互动与长期陪伴的产品方案。</p>
+        <div class="tags"><span data-en="Brand strategy">品牌策略</span><span data-en="User insight">用户洞察</span><span data-en="Companionship">养宠陪伴</span></div>
         <div class="cta-row"><div class="open" data-en="Open project →">打开项目 →</div><a class="demo" href="https://becky013.github.io/-OS/" target="_blank" rel="noopener" data-en="Try App Demo ↗">体验 App Demo ↗</a></div>
+      </div>
+    </article>
+
+    <article class="card" data-pdf="pdf/FIREFINDER-森林消防无人机.pdf">
+      <div class="shot"><img src="covers/firefinder.jpg" alt=""></div>
+      <div class="body">
+        <div class="idx"><span>07 / Firefinder</span><time>2024.06 – 11</time></div>
+        <h3 data-en="FIREFINDER Wildfire Response Drone System">FIREFINDER 森林消防无人机</h3>
+        <p data-en="For high-risk wildfire rescue, the system breaks down monitoring, fire-point locating, aerial delivery and endurance resupply, and pairs surveillance drones, firefighting drones, charging docks and a retardant conversion module into a closed operating loop.">面向森林火灾救援场景，拆解监测预警、火点定位、空中投送与续航补给等核心任务，设计由监测无人机、灭火无人机、充能桩与灭火材料转换模块组成的作业闭环。</p>
+        <div class="tags"><span data-en="System design">系统设计</span><span data-en="Task breakdown">任务拆解</span><span data-en="Hardware">硬件方案</span></div>
+        <div class="open" data-en="Open project →">打开项目 →</div>
+      </div>
+    </article>
+
+    <article class="card" data-pdf="pdf/硕士论文-大湾区低空空域.pdf">
+      <div class="shot"><img src="covers/thesis.jpg" alt=""></div>
+      <div class="body">
+        <div class="idx"><span>08 / Thesis</span><time>2026</time></div>
+        <h3 data-en="Automation-Ready Airspace &amp; Cross-border Coordination Layer in the GBA">大湾区面向自动化运行的空域与跨境协调层</h3>
+        <p data-en="Introduces the “Class X airspace” concept from Automated Flight Rules (AFR) literature as a theoretical reference for two challenges in the Greater Bay Area — three parallel aviation regulatory systems, and the automated, high-density low-altitude operations of the future — then explores how to design a cross-border low-altitude coordination layer suited to the region.">引入自动飞行规则（AFR）文献中的“X 类空域”这一未来空域概念，作为应对粤港澳大湾区两大挑战的理论参考——三套并行的航空监管体系，以及未来自动化、高密度的低空运行；在此基础上探讨如何设计适用于大湾区的跨境低空协调层。</p>
+        <div class="tags"><span data-en="Airspace">低空空域</span><span data-en="Cross-border">跨境协调</span><span data-en="Regulation">规则对照</span></div>
+        <div class="open" data-en="Open project →">打开项目 →</div>
       </div>
     </article>
 
@@ -533,6 +568,38 @@ footer{margin-top:70px;padding:44px 0 34px;border-top:1px solid var(--line-soft)
         <div class="tags"><span data-en="VR healthcare">VR 医疗</span><span data-en="Gamification">游戏化</span><span data-en="Experiments">交互实验</span></div>
         <div class="open" data-en="Open project →">打开项目 →</div>
       </div>
+    </article>
+
+  </div>
+
+  <div class="sub-head">
+    <h3 data-en="Also">其他</h3>
+    <div class="hint" data-en="Hover to read the summary &middot; click to open">鼠标移入查看说明 · 点击打开完整内容</div>
+  </div>
+
+  <div class="mini-grid">
+
+    <article class="card mini" data-pdf="pdf/双座eVTOL-座舱显示设计.pdf">
+      <div class="mini-top">
+        <div class="shot"><img src="covers/evtol.jpg" alt=""></div>
+        <div class="body">
+          <div class="idx"><span>eVTOL</span><time>2025.10 &ndash; 12</time></div>
+          <h3 data-en="2-Seater eVTOL Cockpit Information Logic">双座 eVTOL 座舱信息呈现逻辑梳理</h3>
+        </div>
+        <div class="mini-over"><p data-en="Mapped the mode-transition logic across hover, transition and cruise, defining what must stay visible at a glance in each phase; set information grouping and colour coding, and filtered prompts by flight phase so only currently relevant content remains, reducing operating load.">梳理悬停 / 转换 / 巡航的模式切换逻辑，定义每个阶段必须一眼可见的关键信息；确定信息分组与颜色编码，按飞行阶段分级过滤提示，只保留当下相关内容以降低操作负荷。</p></div>
+      </div>
+    </article>
+
+    <article class="card mini" id="p-travelplan">
+      <a class="mini-top" href="https://becky013.github.io/travelplan/" target="_blank" rel="noopener">
+        <div class="shot"><img src="covers/travelplan.jpg" alt=""></div>
+        <div class="body">
+          <div class="idx"><span>飞省 · FeiSheng</span><time>2026</time></div>
+          <h3 data-en="FeiSheng &middot; AI Flight Deal Assistant">飞省 · AI 特价机票助手</h3>
+        </div>
+        <div class="mini-over"><p data-en="Built for fares that look cheap until you check out: it converts every platform&rsquo;s discounts, baggage allowance and change/refund rules into one all-in price written in plain language, and compares one-way, return, multi-city and multi-origin group trips. Price breakdowns, 30/90/180-day trends and buy-now advice sit next to a deal calendar and encyclopedia that explain the six promo types — member days, early-bird, flight passes and more — while self-transfer itineraries carry an explicit missed-connection warning.">面向“看着便宜、买完才发现不划算”的机票场景：把各平台优惠、行李与退改规则统一折算成到手价并翻成人话，支持单程 / 往返 / 多城市 / 多人异地集合四种比价；配价格拆解、历史走势与买入时机建议，拼程方案主动提示误机风险，并用活动日历与百科讲清会员日、次卡、随心飞等六类特价。</p></div>
+      </a>
+      <div class="mini-foot"><a class="demo" href="https://becky013.github.io/travelplan/" target="_blank" rel="noopener" data-en="Try Web Demo ↗">体验 Web Demo ↗</a></div>
     </article>
 
   </div>
