@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Route Simulation | Vertiport Planner</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body class="site-body" data-page="simulation">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="index.html">
+          <span class="brand-mark">VP</span>
+          <span class="brand-copy">
+            <strong>Vertiport Planner</strong>
+            <span>3D Site Selection &amp; Investment Platform</span>
+          </span>
+        </a>
+        <nav class="nav">
+          <a data-nav="overview" href="index.html">Overview</a>
+          <a data-nav="map" href="map.html">Site Screening</a>
+          <a data-nav="detail" href="site-detail.html">Site Detail</a>
+          <a data-nav="configurator" href="map.html?cfg=1">Configurator</a>
+          <a data-nav="simulation" href="simulation.html">Route Simulation</a>
+          <a data-nav="decision" href="decision.html">Investment Decision</a>
+        </nav>
+        <button class="lang-toggle" id="langToggle" type="button" aria-label="Switch language">中文</button>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="panel">
+        <span class="eyebrow">Step 5 — Route &amp; Reachability Simulation</span>
+        <h1 class="page-title">Not "can it fly?" — "can it operate reliably at scale?"</h1>
+        <p class="page-intro">
+          This simulation connects flight distance, charging time, turnaround, fleet size, alternate sites, weather
+          windows and airspace constraints to answer whether daily operations are viable. It reflects the operational
+          framework described in the ConOps AAM document and aligns with UKRI findings on the sensitivity of
+          vertiport economics to occupancy, turnaround and infrastructure cost.
+        </p>
+        <div class="tab-row" id="simSiteTabs"></div>
+        <div class="tab-row" id="simPlanTabs"></div>
+      </section>
+
+      <!-- Operational assumptions controls -->
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <span class="eyebrow">Operational Parameters</span>
+            <h2>Simulation Assumptions</h2>
+          </div>
+        </div>
+        <p class="panel-lead">
+          Adjust fleet size, turnaround time and weather conditions. Results update immediately. These three variables
+          are the highest-sensitivity drivers of daily capacity and annual revenue, per UKRI socio-economic analysis.
+        </p>
+        <div class="control-grid">
+          <div class="control-card">
+            <label for="fleetCount">
+              <span>Fleet Size</span>
+              <strong id="fleetValue"></strong>
+            </label>
+            <input id="fleetCount" type="range" min="2" max="10" step="1">
+            <p class="control-hint">More aircraft = higher daily throughput, but also more stand and charger demand.</p>
+          </div>
+          <div class="control-card">
+            <label for="turnaroundMinutes">
+              <span>Turnaround Time</span>
+              <strong id="turnaroundValue"></strong>
+            </label>
+            <input id="turnaroundMinutes" type="range" min="9" max="25" step="1">
+            <p class="control-hint">Shorter turnaround increases cycles per day but may require higher-spec charging equipment.</p>
+          </div>
+          <div class="control-card">
+            <label for="weatherMode">
+              <span>Weather Conditions</span>
+            </label>
+            <select id="weatherMode">
+              <option value="clear">Clear — Full operations</option>
+              <option value="normal">Normal — Moderate constraint</option>
+              <option value="constrained">Constrained — Severe weather</option>
+            </select>
+            <p class="control-hint">Adverse weather adds to the cycle time and reduces reserve margin.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="simulation-grid">
+        <aside class="panel">
+          <div class="panel-header">
+            <div>
+              <span class="eyebrow">Available Routes</span>
+              <h2>Route Set</h2>
+            </div>
+          </div>
+          <p class="panel-lead">
+            Each route includes distance, flight time, reserve requirement, charging estimate and alternate sites.
+            Select a route to run the simulation.
+          </p>
+          <div class="route-list" id="routeCards"></div>
+
+          <div class="sim-network-panel">
+            <div class="panel-header" style="margin-top:22px;">
+              <div>
+                <span class="eyebrow">Network Coverage</span>
+                <h2>Node Map</h2>
+              </div>
+            </div>
+            <div id="simNetworkMap"></div>
+          </div>
+        </aside>
+
+        <div class="panel">
+          <div id="simulationSummary"></div>
+          <div class="panel-header" style="margin-top:28px;">
+            <div>
+              <span class="eyebrow">Cycle Time Breakdown</span>
+              <h2>Flight Cycle Analysis</h2>
+            </div>
+          </div>
+          <p class="panel-lead">
+            The total cycle time — outbound flight, turnaround, charging and weather buffer — determines how many
+            complete cycles each aircraft can execute per day. Reducing any segment increases daily capacity.
+          </p>
+          <div class="timeline-stack" id="simulationTimeline"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <span>Route Simulation Workspace · <span data-year></span></span>
+        <div class="footer-links">
+          <a href="decision.html">Investment Decision →</a>
+          <a href="map.html?cfg=1">← Configurator</a>
+        </div>
+      </div>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+    <script src="i18n.js"></script>
+  </body>
+</html>

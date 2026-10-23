@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vertiport Configurator | Vertiport Planner</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body class="site-body" data-page="configurator">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="index.html">
+          <span class="brand-mark">VP</span>
+          <span class="brand-copy">
+            <strong>Vertiport Planner</strong>
+            <span>3D Site Selection &amp; Investment Platform</span>
+          </span>
+        </a>
+        <nav class="nav">
+          <a data-nav="overview" href="index.html">Overview</a>
+          <a data-nav="map" href="map.html">Site Screening</a>
+          <a data-nav="detail" href="site-detail.html">Site Detail</a>
+          <a data-nav="configurator" href="map.html?cfg=1">Configurator</a>
+          <a data-nav="simulation" href="simulation.html">Route Simulation</a>
+          <a data-nav="decision" href="decision.html">Investment Decision</a>
+        </nav>
+        <button class="lang-toggle" id="langToggle" type="button" aria-label="Switch language">中文</button>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="panel">
+        <span class="eyebrow">Step 4 — Rooftop Workspace &amp; Vertiport Configurator</span>
+        <h1 class="page-title">Every module change updates cost, throughput, power demand and feasibility status</h1>
+        <p class="page-intro">
+          Five module categories — Flight Operations, Energy Systems, Passenger &amp; Cargo, Safety &amp; Environment,
+          and Digital &amp; Control — are drawn from FAA EB 105A, EASA PTS-VPT-DSN and the ConOps AAM framework.
+          Adding fast charging automatically flags the need for cooling, ESS and elevated fire-separation requirements.
+        </p>
+        <div class="tab-row" id="configSiteTabs"></div>
+        <div class="tab-row" id="configPlanTabs"></div>
+      </section>
+
+      <section class="config-grid">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <span class="eyebrow">Module Library</span>
+              <h2>Vertiport Module Catalogue</h2>
+            </div>
+          </div>
+          <p class="panel-lead">
+            Each module shows its indicative CAPEX increment, throughput contribution and power requirement.
+            Modules marked <strong>Recommended</strong> are included in the selected scheme tier by default.
+            Adding or removing a module immediately recalculates the summary panel on the right.
+          </p>
+          <div class="module-grid" id="moduleGrid"></div>
+        </div>
+
+        <div>
+          <div class="panel" style="margin-bottom:18px;">
+            <div class="panel-header">
+              <div>
+                <span class="eyebrow">Zone Layout Preview</span>
+                <h2>Operational Floor Plan</h2>
+              </div>
+            </div>
+            <p class="panel-lead">
+              Set eVTOL FATO pads and UAV drone pads below, then activate modules from the catalogue.
+              The floor plan updates in real time — zones activate as you add modules.
+              Pricing from FAA EB 105A benchmarks and 2024 APAC market rates.
+            </p>
+            <div id="padAssembly"></div>
+            <div id="layoutBoard"></div>
+          </div>
+
+          <div class="panel" id="configSummary"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <span>Configurator Workspace · <span data-year></span></span>
+        <div class="footer-links">
+          <a href="simulation.html">Route Simulation →</a>
+          <a href="decision.html">Investment Board</a>
+        </div>
+      </div>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+    <script src="i18n.js"></script>
+  </body>
+</html>

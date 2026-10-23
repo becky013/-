@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Investment Decision | Vertiport Planner</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body class="site-body" data-page="decision">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="index.html">
+          <span class="brand-mark">VP</span>
+          <span class="brand-copy">
+            <strong>Vertiport Planner</strong>
+            <span>3D Site Selection &amp; Investment Platform</span>
+          </span>
+        </a>
+        <nav class="nav">
+          <a data-nav="overview" href="index.html">Overview</a>
+          <a data-nav="map" href="map.html">Site Screening</a>
+          <a data-nav="detail" href="site-detail.html">Site Detail</a>
+          <a data-nav="configurator" href="map.html?cfg=1">Configurator</a>
+          <a data-nav="simulation" href="simulation.html">Route Simulation</a>
+          <a data-nav="decision" href="decision.html">Investment Decision</a>
+        </nav>
+        <button class="lang-toggle" id="langToggle" type="button" aria-label="Switch language">中文</button>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="panel">
+        <span class="eyebrow">Step 6 — Multi-Site Comparison &amp; Investment Decision</span>
+        <h1 class="page-title">Sites, schemes and financials compared in one decision interface</h1>
+        <p class="page-intro">
+          This page is designed for investment committee, project steering and public-sector briefing scenarios.
+          Switch between scheme tiers, investment scenarios (Base / Growth / Conservative) and stakeholder perspectives
+          (Operator / Asset Owner / Government / Investor) to understand why a particular site ranks first under
+          specific conditions and what sensitivity the recommendation has to demand and cost assumptions.
+        </p>
+        <div class="decision-controls">
+          <div class="control-group">
+            <span class="eyebrow">City / Region</span>
+            <div class="tab-row" id="decisionCityTabs"></div>
+          </div>
+          <div class="control-group">
+            <span class="eyebrow">Scheme Tier</span>
+            <div class="tab-row" id="decisionPlanTabs"></div>
+          </div>
+          <div class="control-group">
+            <span class="eyebrow">Investment Scenario</span>
+            <div class="tab-row" id="scenarioTabs"></div>
+          </div>
+          <div class="control-group">
+            <span class="eyebrow">Stakeholder Perspective</span>
+            <div class="tab-row" id="personaTabs"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="decision-grid">
+        <!-- Top-3 ranking cards -->
+        <div>
+          <div class="section-heading" style="margin-bottom:16px;">
+            <div>
+              <span class="eyebrow">Priority Ranking</span>
+              <h2 class="section-title">Top 3 Candidates</h2>
+            </div>
+          </div>
+          <div class="ranking-board" id="rankingBoard"></div>
+        </div>
+
+        <!-- Full comparison table -->
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <span class="eyebrow">Multi-Site Comparison</span>
+              <h2>All Candidates</h2>
+            </div>
+          </div>
+          <p class="panel-lead">
+            Financial metrics are computed from scheme throughput, load factor and scenario multipliers.
+            IRR and payback are indicative — suitable for prioritisation and sensitivity analysis, not binding valuations.
+          </p>
+          <div class="table-scroll">
+            <table class="comparison-table" id="decisionTable"></table>
+          </div>
+        </section>
+
+        <!-- Recommendation summary -->
+        <section class="panel" id="decisionSummary"></section>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <span>Investment Decision Workspace · <span data-year></span></span>
+        <div class="footer-links">
+          <a href="map.html">← Back to Map</a>
+          <a href="index.html">Project Overview</a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Investment Report Modal -->
+    <div class="report-backdrop" id="reportBackdrop" aria-hidden="true" style="display:none;">
+      <div class="report-modal" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle">
+        <div class="report-topbar">
+          <div class="report-topbar-left">
+            <div class="report-topbar-title" id="reportModalTitle">Investment Committee Report</div>
+            <div class="report-topbar-sub" id="reportModalSub">Vertiport Planner · Hong Kong Network</div>
+          </div>
+          <button class="report-close-btn" id="reportCloseBtn" aria-label="Close report">✕</button>
+        </div>
+        <div class="report-body" id="reportBody"><!-- populated by JS --></div>
+        <div class="report-footer">
+          <span class="report-footer-note">
+            Financials are indicative only — suitable for prioritisation and sensitivity analysis, not binding valuations.<br>
+            IRR and payback derived from scenario multipliers. Refer to site-level due-diligence packages for binding estimates.
+          </span>
+          <button class="report-print-btn" onclick="window.print()">⎙ Print / Export PDF</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+    <script src="i18n.js"></script>
+  </body>
+</html>

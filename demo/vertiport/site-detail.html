@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Site Detail | Vertiport Planner</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body class="site-body" data-page="detail">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="index.html">
+          <span class="brand-mark">VP</span>
+          <span class="brand-copy">
+            <strong>Vertiport Planner</strong>
+            <span>3D Site Selection &amp; Investment Platform</span>
+          </span>
+        </a>
+        <nav class="nav">
+          <a data-nav="overview" href="index.html">Overview</a>
+          <a data-nav="map" href="map.html">Site Screening</a>
+          <a data-nav="detail" href="site-detail.html">Site Detail</a>
+          <a data-nav="configurator" href="map.html?cfg=1">Configurator</a>
+          <a data-nav="simulation" href="simulation.html">Route Simulation</a>
+          <a data-nav="decision" href="decision.html">Investment Decision</a>
+        </nav>
+        <button class="lang-toggle" id="langToggle" type="button" aria-label="Switch language">中文</button>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="panel">
+        <span class="eyebrow">Step 3 — Site Detail</span>
+        <h1 class="page-title">Why this site is viable — or why it is not</h1>
+        <p class="page-intro">
+          This page presents the evidence chain for each candidate: hard gate status, scored dimensions, key risks, literature references and implementation recommendations. Switch between sites and scheme tiers using the tabs below.
+        </p>
+        <div class="tab-row" id="detailSiteTabs"></div>
+      </section>
+
+      <!-- Site hero with plan comparison -->
+      <section class="panel" id="detailHero"></section>
+
+      <!-- Initial configuration recommendation (auto-generated per site type) -->
+      <section class="panel" id="detailInitialConfig"></section>
+
+      <!-- Score breakdown + Hard gates -->
+      <section class="detail-grid">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <span class="eyebrow">11-Dimension Technical Scoring</span>
+              <h2>Score Breakdown</h2>
+            </div>
+          </div>
+          <p class="panel-lead">
+            Scored 0–100 across 11 dimensions grouped into four clusters: Airspace &amp; Physical Safety, Regulatory &amp; Connectivity, Operational Performance, and Commercial Viability. Weights shift by active stakeholder persona. Scores above 85 are highlighted green; below 70 amber or red.
+          </p>
+          <div class="score-stack" id="detailScoreBars"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <span class="eyebrow">Binary Feasibility Gates</span>
+              <h2>Hard Gate Status</h2>
+            </div>
+          </div>
+          <p class="panel-lead">
+            Hard gates are pass/warn/fail conditions — not weighted averages. A site with a single fail gate
+            is classified <em>Not Feasible</em> regardless of its scored dimensions.
+          </p>
+          <div class="gate-grid" id="detailHardGates"></div>
+        </div>
+      </section>
+
+      <!-- Risks + Evidence -->
+      <section class="detail-grid">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <span class="eyebrow">Risk Register</span>
+              <h2>Key Risk Signals</h2>
+            </div>
+          </div>
+          <p class="panel-lead">
+            Each risk is classified High / Medium / Low. High risks may block advancement without specific mitigation.
+            Evidence for each risk is traceable to the reference literature.
+          </p>
+          <div class="risk-grid" id="detailRisks"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <span class="eyebrow">Literature Trace</span>
+              <h2>Evidence References</h2>
+            </div>
+          </div>
+          <p class="panel-lead">
+            Every scoring decision links to at least one reference document — FAA EB 105A, EASA PTS-VPT-DSN,
+            Uber Elevate, Bluenest UAM, ConOps AAM, UKRI Future Flight or EHang City Air Transport.
+          </p>
+          <div class="evidence-grid" id="detailEvidence"></div>
+        </div>
+      </section>
+
+      <!-- Operations readiness + Next actions -->
+      <section class="detail-grid" id="detailOperations"></section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <span>Site Detail · <span data-year></span></span>
+        <div class="footer-links">
+          <a href="map.html?cfg=1">Configurator →</a>
+          <a href="simulation.html">Route Simulation</a>
+        </div>
+      </div>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+    <script src="i18n.js"></script>
+  </body>
+</html>

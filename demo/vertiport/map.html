@@ -1,0 +1,2948 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>3D Site Screening | Vertiport Planner</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "Inter", "Avenir Next", system-ui, sans-serif; overflow: hidden; background: #0D1416; }
+    a { color: inherit; text-decoration: none; }
+    button, select, input { font: inherit; cursor: pointer; }
+
+    :root {
+      --ink: #F2EDE4;
+      --ink-soft: #CFD6D2;
+      --ink-faint: #A6B0AC;
+      --glass: rgba(13, 20, 22, 0.88);
+      --glass-light: rgba(18, 27, 29, 0.78);
+      --glass-border: rgba(255,255,255,0.11);
+      --accent: #D9B87C;
+      --accent-glow: rgba(217,184,124,0.20);
+      --amber: #E3C48E;
+      --clay: #E08B62;
+      --green: #6FD3B4;
+      --radius: 4px;
+      --panel-w: 300px;
+      --detail-w: 380px;
+    }
+
+    #mapCanvas { position: fixed; inset: 0; z-index: 0; }
+
+    /* ── Top Navigation Bar ── */
+    .map-topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 60px; z-index: 30;
+      background: var(--glass); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+      display: flex; align-items: center; padding: 0 18px; gap: 0;
+    }
+    .map-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .map-brand-mark {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(145deg, var(--accent), #B8945A);
+      display: grid; place-items: center; font-weight: 900; font-size: 13px; color: #fff;
+    }
+    .map-brand-name { font-weight: 700; font-size: 15px; color: var(--ink); }
+    .map-brand-sub { font-size: 11px; color: var(--ink-faint); }
+    .map-nav { display: flex; align-items: center; gap: 4px; margin-left: 24px; flex: 1; }
+    .map-nav a {
+      padding: 8px 12px; border-radius: 999px; font-size: 13px; font-weight: 600;
+      color: var(--ink-soft); transition: 0.18s;
+    }
+    .map-nav a:hover, .map-nav a.active { background: rgba(255,255,255,0.08); color: var(--ink); }
+    .map-nav a.active { color: var(--green); }
+    .map-nav-cfg-btn {
+      padding: 8px 12px; border-radius: 999px; font-size: 13px; font-weight: 600;
+      color: var(--ink-soft); background: none; border: none; transition: 0.18s; cursor: pointer;
+    }
+    .map-nav-cfg-btn:hover { background: rgba(255,255,255,0.08); color: var(--ink); }
+    .map-nav-cfg-btn.sel-active { color: var(--clay) !important; background: rgba(224,139,98,0.12) !important; }
+    .map-topbar-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .map-site-badge {
+      padding: 6px 12px; border-radius: 999px;
+      background: var(--accent-glow); border: 1px solid rgba(217,184,124,0.36);
+      font-size: 12px; font-weight: 700; color: var(--green);
+    }
+
+    /* ── Left / Right Panels ── */
+    .map-left {
+      position: fixed; top: 68px; left: 14px; width: var(--panel-w);
+      max-height: calc(100vh - 82px); z-index: 20;
+      display: flex; flex-direction: column; gap: 10px;
+      overflow-y: auto; padding-bottom: 16px;
+      scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
+      transition: opacity 0.3s;
+    }
+    .map-right {
+      position: fixed; top: 68px; right: 14px; width: var(--detail-w);
+      max-height: calc(100vh - 82px); z-index: 20;
+      display: flex; flex-direction: column; gap: 10px;
+      overflow-y: auto; padding-bottom: 16px;
+      scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
+      transition: opacity 0.3s;
+    }
+
+    /* ── Glass Panel ── */
+    .glass-card {
+      background: var(--glass); backdrop-filter: blur(18px);
+      border: 1px solid var(--glass-border); border-radius: var(--radius);
+      padding: 16px; color: var(--ink);
+    }
+    .glass-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .glass-card-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-faint); }
+    .glass-card h2 { font-size: 17px; font-weight: 700; color: var(--ink); margin-top: 2px; }
+    .eyebrow { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-faint); font-weight: 700; }
+
+    /* ── Plan/Persona tabs ── */
+    .tier-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tier-tab {
+      padding: 7px 12px; border-radius: 999px;
+      border: 1px solid var(--glass-border); background: transparent;
+      color: var(--ink-soft); font-size: 12px; font-weight: 700; transition: 0.18s;
+    }
+    .tier-tab:hover { color: var(--ink); border-color: rgba(255,255,255,0.2); }
+    .tier-tab.active {
+      background: linear-gradient(135deg, rgba(217,184,124,0.25), rgba(31,77,120,0.35));
+      border-color: rgba(217,184,124,0.5); color: var(--green);
+    }
+
+    /* ── Site list ── */
+    .site-list { display: flex; flex-direction: column; gap: 8px; }
+    .site-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 13px; border-radius: 12px;
+      border: 1px solid var(--glass-border); background: rgba(255,255,255,0.04);
+      cursor: pointer; transition: 0.18s;
+    }
+    .site-item:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.16); }
+    .site-item.active {
+      background: linear-gradient(135deg, rgba(217,184,124,0.18), rgba(31,77,120,0.22));
+      border-color: rgba(217,184,124,0.44);
+    }
+    .site-score-ring {
+      width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--accent);
+      display: grid; place-items: center; flex-shrink: 0;
+      font-size: 14px; font-weight: 900;
+      background: rgba(217,184,124,0.1); color: var(--green);
+    }
+    .site-item.active .site-score-ring { background: linear-gradient(135deg, rgba(217,184,124,0.3), rgba(31,77,120,0.2)); }
+    .site-item-info { flex: 1; }
+    .site-item-name { font-size: 14px; font-weight: 700; color: var(--ink); }
+    .site-item-type { font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
+    .site-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; box-shadow: 0 0 6px var(--green); }
+    .site-status-dot.amber { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+
+    /* ── Layer toggles ── */
+    .layer-toggles { display: flex; flex-direction: column; gap: 7px; }
+    .layer-toggle {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 12px; border-radius: 10px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border);
+      cursor: pointer; transition: 0.18s; color: var(--ink-soft); font-size: 13px; font-weight: 600;
+    }
+    .layer-toggle:hover { background: rgba(255,255,255,0.07); }
+    .layer-toggle.on { border-color: rgba(111,211,180,0.3); color: var(--ink); }
+    .layer-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-right: 8px; }
+    .toggle-switch {
+      width: 30px; height: 16px; border-radius: 999px;
+      background: rgba(255,255,255,0.12); position: relative; transition: 0.2s; flex-shrink: 0;
+    }
+    .toggle-switch::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: rgba(255,255,255,0.4); transition: 0.2s;
+    }
+    .layer-toggle.on .toggle-switch { background: rgba(217,184,124,0.5); }
+    .layer-toggle.on .toggle-switch::after { left: 16px; background: var(--green); }
+
+    /* ── Score bars in right panel ── */
+    .score-rows { display: flex; flex-direction: column; gap: 7px; margin-top: 10px; }
+    .score-row-item { display: grid; grid-template-columns: 110px 1fr 36px; gap: 8px; align-items: center; font-size: 12px; }
+    .score-row-label { color: var(--ink-soft); }
+    .score-bar-bg { height: 7px; border-radius: 999px; background: rgba(255,255,255,0.1); overflow: hidden; }
+    .score-bar-fill { height: 100%; border-radius: inherit; transition: width 0.5s ease; }
+    .score-bar-fill.hi { background: linear-gradient(90deg, var(--accent), var(--green)); }
+    .score-bar-fill.mid { background: linear-gradient(90deg, #1a6e7a, var(--amber)); }
+    .score-bar-fill.lo { background: linear-gradient(90deg, var(--amber), var(--clay)); }
+    .score-val { font-weight: 900; font-size: 13px; text-align: right; }
+
+    /* ── Gate status ── */
+    .gate-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+    .gate-item { padding: 10px 12px; border-radius: 10px; border: 1px solid; font-size: 12px; line-height: 1.5; }
+    .gate-item.pass { background: rgba(111,211,180,0.08); border-color: rgba(111,211,180,0.22); color: var(--ink-soft); }
+    .gate-item.warning { background: rgba(227,196,142,0.08); border-color: rgba(227,196,142,0.24); color: var(--ink-soft); }
+    .gate-item.fail { background: rgba(224,139,98,0.08); border-color: rgba(224,139,98,0.24); color: var(--ink-soft); }
+    .gate-status-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .gate-name { font-weight: 700; color: var(--ink); font-size: 12px; }
+    .gate-pill { padding: 3px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+    .gate-pill.pass { background: rgba(111,211,180,0.18); color: var(--green); }
+    .gate-pill.warning { background: rgba(227,196,142,0.18); color: var(--amber); }
+    .gate-pill.fail { background: rgba(224,139,98,0.18); color: var(--clay); }
+
+    /* ── Metric grid ── */
+    .metrics-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
+    .metric-cell { padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); }
+    .metric-cell span { display: block; font-size: 10px; color: var(--ink-faint); }
+    .metric-cell strong { display: block; font-size: 16px; font-weight: 900; margin-top: 3px; }
+    .big-score-ring {
+      width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--accent);
+      background: var(--accent-glow); display: grid; place-items: center; flex-shrink: 0;
+    }
+    .big-score-ring span { font-size: 22px; font-weight: 900; color: var(--green); }
+
+    /* ── Status pills + CTAs ── */
+    .status-pill { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+    .status-pill.priority { background: linear-gradient(135deg, rgba(217,184,124,0.3), rgba(111,211,180,0.2)); color: var(--green); border: 1px solid rgba(111,211,180,0.3); }
+    .status-pill.green-s { background: rgba(111,211,180,0.15); color: var(--green); border: 1px solid rgba(111,211,180,0.25); }
+    .status-pill.amber-s { background: rgba(227,196,142,0.15); color: var(--amber); border: 1px solid rgba(227,196,142,0.25); }
+    .status-pill.red-s { background: rgba(224,139,98,0.15); color: var(--clay); border: 1px solid rgba(224,139,98,0.25); }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .btn-primary {
+      padding: 9px 16px; border-radius: 999px; border: none;
+      background: linear-gradient(135deg, #0f5c6e, #1a8892);
+      color: #fff; font-size: 13px; font-weight: 700;
+      box-shadow: 0 8px 20px rgba(217,184,124,0.3); transition: 0.18s;
+      display: inline-flex; align-items: center;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(217,184,124,0.4); }
+    .btn-secondary {
+      padding: 9px 16px; border-radius: 999px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+      color: var(--ink-soft); font-size: 13px; font-weight: 700; transition: 0.18s;
+      display: inline-flex; align-items: center; cursor: pointer;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); color: var(--ink); }
+
+    /* ── Bottom bar ── */
+    .map-bottom-bar {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      z-index: 20; display: flex; gap: 8px; align-items: center;
+    }
+    .layer-btn {
+      padding: 8px 14px; border-radius: 999px;
+      border: 1px solid var(--glass-border); background: var(--glass); backdrop-filter: blur(14px);
+      color: var(--ink-soft); font-size: 12px; font-weight: 700; transition: 0.18s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .layer-btn:hover { color: var(--ink); border-color: rgba(255,255,255,0.22); }
+    .layer-btn.active { color: var(--green); border-color: rgba(111,211,180,0.4); background: rgba(13,20,22,0.9); }
+    .layer-btn .l-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .l-dot.airspace { background: rgba(224,139,98,0.9); }
+    .l-dot.wind { background: rgba(227,196,142,0.9); }
+    .l-dot.energy { background: rgba(111,211,180,0.9); }
+    .l-dot.routes { background: rgba(100,160,255,0.9); }
+    #selModeBtn.sel-active { color: var(--clay); border-color: rgba(224,139,98,0.5); background: rgba(180,30,30,0.18); }
+
+    /* ── Map markers ── */
+    /* ── Radar-pulse site markers ── */
+    .site-radar-wrap {
+      position: relative;
+      width: 48px; height: 48px;
+      cursor: pointer;
+    }
+    /* Three expanding rings — staggered delay creates radar sweep */
+    .radar-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1.5px solid rgba(111,211,180,0.55);
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%) scale(0.2);
+      width: 80px; height: 80px;
+      animation: radarExpand 2.8s ease-out infinite;
+      pointer-events: none;
+    }
+    .radar-ring:nth-child(2) { animation-delay: 0.93s; border-color: rgba(111,211,180,0.35); }
+    .radar-ring:nth-child(3) { animation-delay: 1.86s; border-color: rgba(111,211,180,0.18); }
+    @keyframes radarExpand {
+      0%   { transform: translate(-50%,-50%) scale(0.2); opacity: 0.9; }
+      100% { transform: translate(-50%,-50%) scale(2.6); opacity: 0; }
+    }
+    /* Score badge — centre of radar */
+    .radar-core {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: rgba(13,20,22,0.92);
+      border: 2.5px solid var(--green);
+      box-shadow: 0 0 14px rgba(111,211,180,0.40), 0 0 28px rgba(111,211,180,0.15);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 3;
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .site-radar-wrap:hover .radar-core,
+    .site-radar-wrap.active .radar-core {
+      border-color: #fff;
+      box-shadow: 0 0 20px rgba(111,211,180,0.60), 0 0 40px rgba(111,211,180,0.25);
+    }
+    .radar-score {
+      font-size: 13px; font-weight: 900; color: var(--green); line-height: 1;
+    }
+    /* Label card — floats to the right of the dot */
+    .radar-label {
+      position: absolute;
+      left: 52px; top: 50%;
+      transform: translateY(-50%);
+      background: rgba(13,20,22,0.90);
+      border: 1px solid rgba(111,211,180,0.20);
+      border-radius: 7px;
+      padding: 5px 9px;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 4;
+      backdrop-filter: blur(8px);
+    }
+    .radar-name {
+      font-size: 11px; font-weight: 800; color: var(--ink);
+      letter-spacing: 0.03em;
+    }
+    .radar-node-type {
+      font-size: 9.5px; font-weight: 700;
+      color: var(--accent); letter-spacing: 0.06em;
+      margin-top: 1px;
+    }
+    .radar-coords {
+      font-size: 9px; color: var(--ink-faint);
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 2px;
+    }
+    /* active site → label border brighter */
+    .site-radar-wrap.active .radar-label {
+      border-color: rgba(111,211,180,0.45);
+    }
+
+    /* ── Site-popup (MapLibre popup content override) ── */
+    .maplibregl-popup.site-popup .maplibregl-popup-content {
+      background: rgba(13,20,22,0.97) !important;
+      border: 1px solid rgba(111,211,180,0.22) !important;
+      border-radius: 14px !important;
+      padding: 0 !important;
+      color: #d0e4ec !important;
+      min-width: 310px; max-width: 360px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.7) !important;
+    }
+    .maplibregl-popup.site-popup .maplibregl-popup-tip { display:none; }
+    .maplibregl-popup.site-popup .maplibregl-popup-close-button {
+      color: rgba(208,228,236,0.55) !important;
+      font-size: 18px !important; top: 10px !important; right: 14px !important;
+    }
+    .sp-header {
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid rgba(111,211,180,0.1);
+    }
+    .sp-node-badge {
+      display: inline-block; padding: 2px 9px; border-radius: 999px;
+      background: rgba(217,184,124,0.20); border: 1px solid rgba(111,211,180,0.30);
+      font-size: 10px; font-weight: 800; color: var(--green); letter-spacing: 0.07em;
+      margin-bottom: 6px;
+    }
+    .sp-title {
+      font-size: 15px; font-weight: 900; color: #fff;
+      line-height: 1.3; margin-bottom: 3px;
+    }
+    .sp-district { font-size: 11px; color: var(--ink-faint); }
+    .sp-body { padding: 10px 16px; }
+    .sp-score-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+    }
+    .sp-score-big {
+      font-size: 28px; font-weight: 900; color: var(--green); line-height: 1;
+    }
+    .sp-score-label { font-size: 10px; color: var(--ink-faint); line-height: 1.4; }
+    .sp-summary {
+      font-size: 11.5px; color: var(--ink-soft); line-height: 1.65;
+      margin-bottom: 10px;
+    }
+    .sp-capex-row {
+      display: flex; gap: 8px; margin-bottom: 10px;
+    }
+    .sp-capex-chip {
+      flex: 1; background: rgba(111,211,180,0.06); border: 1px solid rgba(111,211,180,0.14);
+      border-radius: 7px; padding: 6px 8px; text-align: center;
+    }
+    .sp-capex-chip span { display: block; font-size: 9px; color: var(--ink-faint); margin-bottom: 2px; }
+    .sp-capex-chip strong { font-size: 12px; font-weight: 800; color: var(--ink); }
+    .sp-btns {
+      display: flex; gap: 8px; padding: 0 16px 14px;
+    }
+    .sp-btn-detail {
+      flex: 1; padding: 8px 0; border-radius: 8px;
+      background: rgba(111,211,180,0.08); border: 1px solid rgba(111,211,180,0.25);
+      color: var(--green); font-size: 12px; font-weight: 700; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .sp-btn-detail:hover { background: rgba(111,211,180,0.16); }
+    .sp-btn-cfg {
+      flex: 1; padding: 8px 0; border-radius: 8px;
+      background: rgba(217,184,124,0.22); border: 1px solid rgba(111,211,180,0.4);
+      color: #fff; font-size: 12px; font-weight: 700; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .sp-btn-cfg:hover { background: rgba(217,184,124,0.38); }
+
+    /* ── Misc ── */
+    .divider { height: 1px; background: var(--glass-border); margin: 12px 0; }
+    .panel-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-faint); margin-bottom: 8px; }
+    .detail-summary-text { font-size: 13px; color: var(--ink-soft); line-height: 1.65; margin: 8px 0; }
+    .maplibregl-ctrl-attrib { font-size: 10px; opacity: 0.5; }
+    .maplibregl-ctrl-attrib a { color: inherit; }
+    .maplibregl-ctrl-group { background: var(--glass) !important; border-color: var(--glass-border) !important; }
+    .maplibregl-ctrl-group button { background-color: transparent !important; border-color: var(--glass-border) !important; }
+    .maplibregl-ctrl-icon { filter: invert(0.7); }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+    /* ── City / Region selector tabs ── */
+    .city-tabs { display: flex; gap: 5px; flex-wrap: wrap; }
+    .city-tab {
+      padding: 6px 10px; border-radius: 999px; font-size: 11px; font-weight: 700;
+      border: 1px solid var(--glass-border); background: transparent;
+      color: var(--ink-soft); transition: 0.18s; cursor: pointer;
+    }
+    .city-tab:hover { color: var(--ink); border-color: rgba(255,255,255,0.2); }
+    .city-tab.active {
+      background: linear-gradient(135deg, rgba(40,80,160,0.32), rgba(20,50,110,0.28));
+      border-color: rgba(100,160,255,0.5); color: #6aa0ff;
+    }
+
+    /* ── Approved site radar variant (red rings + badge) ── */
+    .radar-core.approved {
+      border-color: #E4746C;
+      box-shadow: 0 0 14px rgba(228,116,108,0.50), 0 0 28px rgba(228,116,108,0.20);
+    }
+    .site-radar-wrap:hover .radar-core.approved,
+    .site-radar-wrap.active .radar-core.approved {
+      border-color: #ff8080;
+      box-shadow: 0 0 20px rgba(228,116,108,0.70), 0 0 40px rgba(228,116,108,0.30);
+    }
+    .radar-ring.apv { border-color: rgba(228,116,108,0.50); }
+    .radar-ring.apv:nth-child(2) { border-color: rgba(228,116,108,0.32); }
+    .radar-ring.apv:nth-child(3) { border-color: rgba(228,116,108,0.16); }
+    .radar-apv-badge {
+      position: absolute; top: -5px; right: -5px;
+      width: 15px; height: 15px; border-radius: 50%;
+      background: #E4746C; border: 2px solid rgba(13,20,22,0.95);
+      z-index: 5; display: flex; align-items: center; justify-content: center;
+      font-size: 7px; color: #fff; font-weight: 900; line-height: 1;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       ROOFTOP CONFIGURATOR — INTEGRATED MAP MODE
+       ════════════════════════════════════════════════════════════ */
+
+    /* ── Selection instructions bar ── */
+    #selInstructions {
+      position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+      z-index: 35; display: none; align-items: center; gap: 12px;
+      padding: 10px 20px; white-space: nowrap;
+      background: rgba(11,17,19,0.96); backdrop-filter: blur(20px);
+      border: 1px solid rgba(228,116,108,0.45); border-radius: 999px;
+      font-size: 13px; font-weight: 700; color: var(--clay);
+      box-shadow: 0 4px 24px rgba(200,40,40,0.25);
+    }
+    #selInstructions .sel-step-text { flex: 1; }
+    .sel-quick-btn {
+      padding: 5px 12px; border-radius: 999px; font-size: 11px; font-weight: 700;
+      background: rgba(228,116,108,0.18); border: 1px solid rgba(228,116,108,0.4);
+      color: var(--clay); cursor: pointer; transition: 0.15s; white-space: nowrap;
+    }
+    .sel-quick-btn:hover { background: rgba(228,116,108,0.30); }
+    .sel-cancel-btn {
+      padding: 5px 10px; border-radius: 999px; font-size: 11px; font-weight: 700;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+      color: var(--ink-soft); cursor: pointer; transition: 0.15s;
+    }
+    .sel-cancel-btn:hover { background: rgba(255,255,255,0.12); color: var(--ink); }
+
+    /* ── Confirmation modal ── */
+    #cfgConfirm {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      z-index: 100; display: none;
+      background: rgba(13,20,22,0.97); backdrop-filter: blur(28px);
+      border: 1px solid rgba(228,116,108,0.35); border-radius: 22px;
+      padding: 28px; width: 400px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.8), 0 0 0 1px rgba(228,116,108,0.12);
+    }
+    .confirm-eyebrow { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--clay); margin-bottom: 8px; }
+    #cfgConfirm h3 { font-size: 19px; font-weight: 900; color: var(--ink); margin-bottom: 6px; }
+    #cfgConfirm p { font-size: 13px; color: var(--ink-soft); line-height: 1.6; margin-bottom: 4px; }
+    .confirm-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0; }
+    .confirm-cell {
+      padding: 10px 12px; border-radius: 10px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border);
+    }
+    .confirm-cell span { display: block; font-size: 10px; color: var(--ink-faint); }
+    .confirm-cell strong { display: block; font-size: 15px; font-weight: 900; color: var(--ink); margin-top: 2px; }
+    .confirm-btns { display: flex; gap: 8px; margin-top: 14px; }
+    .btn-cfg-enter {
+      flex: 1; padding: 11px 16px; border-radius: 999px; border: none;
+      background: linear-gradient(135deg, #7a1212, #b52020);
+      color: #fff; font-size: 13px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 8px 20px rgba(180,40,40,0.4); transition: 0.18s;
+    }
+    .btn-cfg-enter:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(180,40,40,0.55); }
+    .btn-cfg-cancel {
+      padding: 11px 16px; border-radius: 999px; cursor: pointer;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+      color: var(--ink-soft); font-size: 13px; font-weight: 700; transition: 0.18s;
+    }
+    .btn-cfg-cancel:hover { background: rgba(255,255,255,0.1); color: var(--ink); }
+    .confirm-sub-link {
+      margin-top: 12px; text-align: center; font-size: 11px;
+      color: var(--ink-faint); cursor: pointer; text-decoration: underline;
+      background: none; border: none; width: 100%;
+    }
+    .confirm-sub-link:hover { color: var(--ink-soft); }
+
+    /* ── Configurator toolbar ── */
+    #cfgToolbar {
+      position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+      z-index: 35; display: none; align-items: center; gap: 12px;
+      padding: 9px 22px;
+      background: rgba(11,17,19,0.97); backdrop-filter: blur(22px);
+      border: 1px solid rgba(228,116,108,0.35); border-radius: 999px;
+      box-shadow: 0 4px 24px rgba(200,40,40,0.22);
+      white-space: nowrap;
+    }
+    .cfg-mode-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--clay);
+    }
+    .cfg-tb-divider { width: 1px; height: 20px; background: var(--glass-border); flex-shrink: 0; }
+    .cfg-capex-live {
+      font-size: 14px; font-weight: 900; color: var(--green);
+      padding: 4px 12px; border-radius: 999px;
+      background: rgba(111,211,180,0.1); border: 1px solid rgba(111,211,180,0.25);
+    }
+    .cfg-tb-hint { font-size: 11px; color: var(--ink-faint); }
+    .btn-cfg-exit {
+      padding: 6px 14px; border-radius: 999px;
+      background: rgba(224,139,98,0.12); border: 1px solid rgba(224,139,98,0.35);
+      color: var(--clay); font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.18s;
+    }
+    .btn-cfg-exit:hover { background: rgba(224,139,98,0.26); }
+
+    /* ── Module palette ── */
+    #cfgPalette {
+      position: fixed; left: 14px; right: auto; top: 122px;
+      width: 272px; max-height: calc(100vh - 140px);
+      z-index: 25; display: none; flex-direction: column; gap: 8px;
+      overflow-y: auto; padding-bottom: 16px;
+      scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
+    }
+    .cfg-pal-card {
+      background: rgba(13,20,22,0.94); backdrop-filter: blur(20px);
+      border: 1px solid rgba(228,116,108,0.2); border-radius: var(--radius);
+      padding: 14px;
+    }
+    .cfg-pal-title {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--clay); margin-bottom: 4px;
+    }
+    .cfg-pal-subtitle { font-size: 11px; color: var(--ink-faint); line-height: 1.5; margin-bottom: 12px; }
+    .palette-mod {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 11px; border-radius: 10px; margin-bottom: 5px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border);
+      cursor: grab; transition: 0.15s; user-select: none;
+    }
+    .palette-mod:last-child { margin-bottom: 0; }
+    .palette-mod:hover { background: rgba(255,255,255,0.09); }
+    .palette-mod:active { cursor: grabbing; opacity: 0.65; }
+    .palette-mod-icon {
+      width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0;
+      display: grid; place-items: center;
+    }
+    .palette-mod-info { flex: 1; min-width: 0; }
+    .palette-mod-name { font-size: 12px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+    .palette-mod-price { font-size: 11px; color: var(--amber); margin-top: 1px; font-weight: 700; }
+    .palette-mod-dims { font-size: 10px; color: var(--ink-faint); margin-top: 1px; }
+    .cfg-pal-capex {
+      margin-top: 12px; padding: 12px; border-radius: 10px;
+      background: rgba(111,211,180,0.06); border: 1px solid rgba(111,211,180,0.2);
+    }
+    .cfg-pal-capex-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); }
+    .cfg-pal-capex-val { font-size: 22px; font-weight: 900; color: var(--green); margin-top: 4px; }
+    .cfg-pal-instr { font-size: 11px; color: var(--ink-faint); line-height: 1.6; margin-top: 10px; }
+
+    /* ── Overlay (SVG workspace) ── */
+    #cfgOverlay {
+      position: fixed; z-index: 12; display: none;
+      pointer-events: none; overflow: hidden;
+      transition: none;
+    }
+    #cfgOverlay.active { pointer-events: all; }
+
+    /* ── Drag ghost ── */
+    #dragGhost {
+      position: fixed; z-index: 300; pointer-events: none;
+      display: none; border-radius: 10px; opacity: 0.88;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       DIGITAL TWIN AIRSPACE LAYER STYLES
+       ════════════════════════════════════════════════════════════ */
+
+    /* Animated eVTOL / UAV dot */
+    .evtol-dot {
+      width: 14px; height: 14px; border-radius: 50%;
+      background: #8FDCC4;
+      box-shadow: 0 0 8px rgba(34,211,238,0.7), 0 0 22px rgba(34,211,238,0.3);
+      animation: evtolPulse 1.6s ease-in-out infinite;
+      cursor: pointer;
+    }
+    .evtol-dot.green  { background: #6FD3B4; box-shadow: 0 0 8px rgba(111,211,180,0.7), 0 0 20px rgba(111,211,180,0.3); }
+    .evtol-dot.amber  { background: #E3C48E; box-shadow: 0 0 8px rgba(251,191,36,0.7), 0 0 20px rgba(251,191,36,0.3); }
+    .evtol-dot.purple { background: #a78bfa; box-shadow: 0 0 8px rgba(167,139,250,0.7), 0 0 20px rgba(167,139,250,0.3); }
+    .evtol-dot.rose   { background: #fb7185; box-shadow: 0 0 8px rgba(251,113,133,0.7), 0 0 20px rgba(251,113,133,0.3); }
+    @keyframes evtolPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.35); opacity: 0.65; }
+    }
+
+    /* Route anim dot */
+    .route-anim-dot {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: #8FDCC4;
+      box-shadow: 0 0 14px rgba(34,211,238,0.9), 0 0 36px rgba(34,211,238,0.4);
+      animation: evtolPulse 1s ease-in-out infinite;
+    }
+
+    /* Corridor legend chips */
+    .corridor-legend {
+      display: flex; flex-direction: column; gap: 5px; margin-top: 10px;
+    }
+    .corridor-chip {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; color: var(--ink-soft);
+    }
+    .corridor-swatch {
+      width: 22px; height: 8px; border-radius: 3px; flex-shrink: 0;
+    }
+
+    /* Weather display card */
+    #weatherCard {
+      margin-top: 10px; padding: 10px;
+      background: rgba(0,0,0,0.3); border-radius: 8px;
+      border: 1px solid rgba(127,168,232,0.2);
+      font-size: 11px; color: var(--ink-soft); line-height: 1.7;
+      display: none;
+    }
+    #weatherCard .w-title {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: #7FA8E8; margin-bottom: 6px;
+    }
+    #weatherCard .w-row { display: flex; justify-content: space-between; padding: 2px 0; }
+    #weatherCard .w-val { font-weight: 700; color: var(--ink); font-family: 'JetBrains Mono', monospace; }
+    #weatherCard .w-safe { color: #6FD3B4; font-weight: 700; }
+    #weatherCard .w-warn { color: #E3C48E; font-weight: 700; }
+    #weatherCard .w-danger { color: #E4746C; font-weight: 700; }
+
+    /* Status log */
+    #mapLog {
+      margin-top: 8px; padding: 7px 9px;
+      background: rgba(0,0,0,0.35); border-radius: 6px;
+      font-size: 10px; color: #475569;
+      max-height: 80px; overflow-y: auto; line-height: 1.7;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    #mapLog .ok  { color: #6FD3B4; }
+    #mapLog .err { color: #E4746C; }
+    #mapLog .inf { color: #7FA8E8; }
+
+    /* Small action buttons for data fetch */
+    .action-btn {
+      display: flex; align-items: center; gap: 8px;
+      width: 100%; padding: 8px 11px; margin-bottom: 5px;
+      background: rgba(30,41,59,0.6); border: 1px solid rgba(110,122,120,0.35);
+      border-radius: 8px; color: var(--ink-soft); font-size: 12px;
+      font-family: inherit; cursor: pointer; transition: 0.15s; text-align: left;
+    }
+    .action-btn:hover { background: rgba(51,65,85,0.7); border-color: rgba(127,168,232,0.35); color: var(--ink); }
+    .action-btn.on { background: rgba(127,168,232,0.12); border-color: rgba(127,168,232,0.45); color: #93c5fd; }
+  
+    /* ── Blueprint Luxe overrides ── */
+    :root { --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+    body { font-family: "Inter", -apple-system, "PingFang SC", sans-serif; }
+    .map-brand-mark {
+      border-radius: 50%; background: radial-gradient(circle at 30% 25%, rgba(217,184,124,0.26), transparent 70%);
+      border: 1px solid rgba(217,184,124,0.30); color: #F0D5A0; font-weight: 500; font-size: 12px;
+    }
+    .map-brand-name { font-weight: 500; letter-spacing: -0.01em; }
+    .map-brand-sub { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; }
+    .map-nav a, .map-nav-cfg-btn { font-weight: 450; border-radius: 999px; }
+    .map-nav a.active { color: #F0D5A0; border: 1px solid rgba(217,184,124,0.30); background: transparent; }
+    .map-site-badge {
+      font-family: var(--mono); font-weight: 400; font-size: 10.5px; letter-spacing: 0.14em;
+      text-transform: uppercase; color: #F0D5A0; background: rgba(217,184,124,0.10);
+      border: 1px solid rgba(217,184,124,0.30);
+    }
+    .mlm-score, .mm-score { font-family: var(--mono); }
+    .mlm-name, .mm-name { font-weight: 450; }
+
+    /* 地图标记:浅黄底深字 */
+    .map-lib-marker, .mlm-marker {
+      background: #E8D2A6 !important; border: 2px solid #F0D5A0 !important;
+      border-radius: 4px !important; color: #171310 !important;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.5) !important;
+    }
+    .map-lib-marker.active { background: #F5E3BC !important; border-color: #FFFFFF !important; }
+    .mlm-score { font-family: var(--mono); font-weight: 500; color: #171310 !important; }
+    .mlm-name { color: #3A2E20 !important; opacity: 1 !important; font-weight: 600; }
+
+    .lang-toggle {
+      font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.12em;
+      padding: 7px 13px; border-radius: 999px;
+      border: 1px solid rgba(217,184,124,0.30); background: rgba(217,184,124,0.10);
+      color: #F0D5A0; cursor: pointer; white-space: nowrap; transition: 0.18s; flex-shrink: 0;
+    }
+    .lang-toggle:hover { background: #D9B87C; color: #191207; border-color: #D9B87C; }
+  </style>
+</head>
+<body>
+
+<!-- ══ 3D MAP ══════════════════════════════════════════════════ -->
+<div id="mapCanvas"></div>
+
+<!-- ══ TOP NAV ════════════════════════════════════════════════ -->
+<header class="map-topbar">
+  <div class="map-brand">
+    <div class="map-brand-mark">VP</div>
+    <div>
+      <div class="map-brand-name">Vertiport Planner</div>
+      <div class="map-brand-sub">3D Site Selection Platform</div>
+    </div>
+  </div>
+  <nav class="map-nav">
+    <a href="index.html">Overview</a>
+    <a href="map.html" class="active">Site Screening</a>
+    <a href="site-detail.html">Site Detail</a>
+    <button class="map-nav-cfg-btn" id="navCfgBtn">Configurator</button>
+    <a href="simulation.html">Simulation</a>
+    <a href="decision.html">Investment</a>
+  </nav>
+  <div class="map-topbar-right">
+    <button class="lang-toggle" id="langToggle" type="button" aria-label="Switch language">中文</button>
+    <span class="map-site-badge" id="activeSiteBadge">Hong Kong Demo · 5 Sites</span>
+  </div>
+</header>
+
+<!-- ══ LEFT PANEL ════════════════════════════════════════════ -->
+<aside class="map-left">
+  <div class="glass-card">
+    <div class="glass-card-header">
+      <span class="panel-section-title">Scheme Tier</span>
+    </div>
+    <div class="tier-tabs" id="mapPlanTabs"></div>
+    <div class="divider"></div>
+    <div class="glass-card-header">
+      <span class="panel-section-title">Stakeholder View</span>
+    </div>
+    <div class="tier-tabs" id="mapPersonaTabs"></div>
+  </div>
+  <div class="glass-card">
+    <div class="glass-card-header">
+      <span class="panel-section-title">City / Region</span>
+    </div>
+    <div class="city-tabs" id="mapCityTabs"></div>
+  </div>
+  <div class="glass-card">
+    <div class="glass-card-header">
+      <span class="panel-section-title">Candidate Sites</span>
+      <span style="font-size:11px;color:var(--ink-faint)" id="siteCountLabel">Ranked by score</span>
+    </div>
+    <div class="site-list" id="mapSiteList"></div>
+  </div>
+  <div class="glass-card">
+    <div class="glass-card-header">
+      <span class="panel-section-title">Map Layers</span>
+    </div>
+    <div class="layer-toggles" id="layerToggles">
+      <div class="layer-toggle on" data-layer="buildings">
+        <span style="display:flex;align-items:center;gap:8px"><span class="layer-dot" style="background:#5b8faa"></span>3D Buildings</span>
+        <span class="toggle-switch"></span>
+      </div>
+      <div class="layer-toggle on" data-layer="airspace">
+        <span style="display:flex;align-items:center;gap:8px"><span class="layer-dot" style="background:#E08B62"></span>Airspace Constraints</span>
+        <span class="toggle-switch"></span>
+      </div>
+      <div class="layer-toggle on" data-layer="wind">
+        <span style="display:flex;align-items:center;gap:8px"><span class="layer-dot" style="background:#E3C48E"></span>Wind / Turbulence Zones</span>
+        <span class="toggle-switch"></span>
+      </div>
+      <div class="layer-toggle on" data-layer="coverage">
+        <span style="display:flex;align-items:center;gap:8px"><span class="layer-dot" style="background:#6FD3B4"></span>Coverage Radius</span>
+        <span class="toggle-switch"></span>
+      </div>
+      <div class="layer-toggle" data-layer="routes">
+        <span style="display:flex;align-items:center;gap:8px"><span class="layer-dot" style="background:#6aa0ff"></span>Route Network</span>
+        <span class="toggle-switch"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Airspace Operations ── -->
+  <div class="glass-card">
+    <div class="glass-card-header">
+      <span class="panel-section-title">Airspace Operations</span>
+    </div>
+    <div class="layer-toggles">
+      <div class="layer-toggle" data-layer="waypoints">
+        <span style="display:flex;align-items:center;gap:8px"><span class="layer-dot" style="background:#7FA8E8"></span>Waypoint Network</span>
+        <span class="toggle-switch"></span>
+      </div>
+    </div>
+    <!-- corridorLegend kept hidden for toggle compatibility -->
+    <div class="corridor-legend" id="corridorLegend" style="display:none"></div>
+  </div>
+
+  <!-- ── Live Traffic ── -->
+  <div class="glass-card">
+    <div class="glass-card-header">
+      <span class="panel-section-title">Live Traffic Simulation</span>
+    </div>
+    <div class="layer-toggles">
+      <div class="layer-toggle" data-layer="drones">
+        <span style="display:flex;align-items:center;gap:8px"><span class="layer-dot" style="background:#8FDCC4;box-shadow:0 0 5px rgba(34,211,238,0.6)"></span>eVTOL / UAV Traffic</span>
+        <span class="toggle-switch"></span>
+      </div>
+      <div class="layer-toggle" data-layer="routeAnim">
+        <span style="display:flex;align-items:center;gap:8px"><span class="layer-dot" style="background:#a78bfa;box-shadow:0 0 5px rgba(167,139,250,0.6)"></span>Route Animation</span>
+        <span class="toggle-switch"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Real-time Data ── -->
+  <div class="glass-card">
+    <div class="glass-card-header">
+      <span class="panel-section-title">Real-time Data</span>
+    </div>
+    <button class="action-btn" id="btnHKOWeather">🌤 HK Observatory Weather</button>
+    <button class="action-btn" id="btnWindData">🌬 Multi-altitude Wind (Open-Meteo)</button>
+    <div id="weatherCard"></div>
+    <div id="mapLog">System ready — Victoria Harbour Digital Twin</div>
+  </div>
+
+</aside>
+
+<!-- ══ RIGHT DETAIL PANEL ════════════════════════════════════ -->
+<aside class="map-right" id="mapDetailPanel">
+  <div class="glass-card">
+    <div style="text-align:center;padding:24px 0;color:var(--ink-faint)">
+      <div style="font-size:32px;margin-bottom:8px">◎</div>
+      <div style="font-size:13px">Click a site marker or candidate<br>from the left panel to view its<br>full scoring assessment.</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ══ BOTTOM BAR ════════════════════════════════════════════ -->
+<div class="map-bottom-bar">
+  <div style="background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--glass-border);border-radius:999px;padding:6px 14px;font-size:11px;color:var(--ink-faint);">
+    HK · 22.32°N, 114.17°E · Pitch 55° · Bearing −15°
+  </div>
+  <button class="layer-btn active" id="btn3d">
+    <span class="l-dot" style="background:#5b8faa"></span> 3D View
+  </button>
+  <button class="layer-btn" id="btnSatellite">
+    <span class="l-dot" style="background:#888"></span> Satellite
+  </button>
+  <button class="layer-btn" id="btnReset">↺ Reset View</button>
+  <button class="layer-btn" id="selModeBtn">⬛ Define Vertiport Area</button>
+</div>
+
+<!-- ══ SELECTION INSTRUCTIONS ════════════════════════════════ -->
+<div id="selInstructions">
+  <span class="sel-step-text" id="selStepText">Point 1 / 4 — click first corner of the vertiport area</span>
+  <button class="sel-quick-btn" id="cfgQuickSite">Use site preset →</button>
+  <button class="sel-cancel-btn" id="selCancelBtn">✕ Cancel</button>
+</div>
+
+<!-- ══ CONFIRMATION MODAL ════════════════════════════════════ -->
+<div id="cfgConfirm">
+  <div class="confirm-eyebrow" id="cfgConfirmEyebrow">Site Area Selected</div>
+  <h3 id="cfgConfirmTitle">Vertiport Workspace</h3>
+  <p id="cfgConfirmDesc">Confirm the selected area to enter Vertiport Configurator. The map shifts to bird's-eye view — preset modules for this site type are pre-placed and fully draggable.</p>
+  <div class="confirm-meta" id="cfgConfirmMeta"></div>
+  <div class="confirm-btns">
+    <button class="btn-cfg-enter" id="cfgEnterBtn">Enter Configurator →</button>
+    <button class="btn-cfg-cancel" id="cfgCancelBtn">Cancel</button>
+  </div>
+  <button class="confirm-sub-link" id="cfgUseSite">Use preset footprint for this site type</button>
+</div>
+
+<!-- ══ CONFIGURATOR TOOLBAR ══════════════════════════════════ -->
+<div id="cfgToolbar">
+  <span class="cfg-mode-label">⬛ Rooftop Configurator</span>
+  <div class="cfg-tb-divider"></div>
+  <span class="cfg-tb-hint">Drag modules from palette · Right-click placed module to remove</span>
+  <div class="cfg-tb-divider"></div>
+  <span class="cfg-capex-live" id="cfgCapexLive">HK$ 0.00M</span>
+  <div class="cfg-tb-divider"></div>
+  <button class="btn-cfg-exit" id="cfgExitBtn">✕ Exit</button>
+</div>
+
+<!-- ══ MODULE PALETTE ════════════════════════════════════════ -->
+<div id="cfgPalette">
+  <div class="cfg-pal-card">
+    <div class="cfg-pal-title">Module Palette</div>
+    <div class="cfg-pal-subtitle">Based on FAA EB 105A, EASA PTS-VPT-DSN &amp; ConOps AAM specifications.</div>
+    <div id="paletteModList"></div>
+    <div class="cfg-pal-capex">
+      <div class="cfg-pal-capex-label">Total CAPEX Placed</div>
+      <div class="cfg-pal-capex-val" id="paletteTotalCapex">HK$ 0.00M</div>
+    </div>
+    <div class="cfg-pal-instr">Drag any module onto the red workspace. Modules must stay within the boundary. Right-click a placed module to remove it.</div>
+  </div>
+</div>
+
+<!-- ══ OVERLAY (SVG workspace over map) ══════════════════════ -->
+<div id="cfgOverlay"></div>
+
+<!-- ══ DRAG GHOST ════════════════════════════════════════════ -->
+<div id="dragGhost"></div>
+
+<script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+<script src="data.js"></script>
+<script>
+(function () {
+  var D = window.vertiportData;
+
+  /* ── State ── */
+  var params = new URLSearchParams(window.location.search);
+  var selectedSiteId  = params.get('site')    || D.sites[0].id;
+  var selectedPlan    = params.get('plan')     || 'standard';
+  var selectedPersona = params.get('persona')  || 'Investor';
+  var selectedCity    = params.get('city')     || 'hong-kong';
+  var map, markersMap = {};
+
+  /* ══════════════════════════════════════════════════════════════
+     VERTIPORT MODULE DEFINITIONS
+     Source: FAA EB 105A §3-4, EASA PTS-VPT-DSN §2-5, ConOps AAM §6
+     ══════════════════════════════════════════════════════════════ */
+  var CFG_MODULES = [
+    {
+      id: 'evtol_fato', label: 'eVTOL FATO Pad', shortLabel: 'H',
+      price: 2.80, color: '#072a36', border: '#D9B87C', textColor: '#6FD3B4',
+      gw: 4, gh: 4, shape: 'circle', icon: '◎',
+      desc: 'Final Approach & Takeoff + TLOF. 1.5× rotor clearance. FAA EB 105A §4.2'
+    },
+    {
+      id: 'evtol_stand', label: 'eVTOL Stand', shortLabel: 'Stand',
+      price: 0.80, color: '#06192c', border: '#1e5c7e', textColor: '#7bafd4',
+      gw: 3, gh: 3, shape: 'rect', icon: '⬜',
+      desc: 'Aircraft parking position + GPU. Adjacent to FATO. EASA PTS-VPT-DSN §3'
+    },
+    {
+      id: 'uav_pad', label: 'UAV Landing Pad', shortLabel: 'UAV',
+      price: 0.45, color: '#042519', border: '#0f7a58', textColor: '#6ed4aa',
+      gw: 2, gh: 2, shape: 'hex', icon: '⬡',
+      desc: 'Unmanned VTOL position. Hexagonal tessellation. ConOps AAM §6.3'
+    },
+    {
+      id: 'ev_charger', label: 'eVTOL Charger', shortLabel: 'Chgr',
+      price: 1.20, color: '#251800', border: '#b07200', textColor: '#E3C48E',
+      gw: 2, gh: 1, shape: 'rect', icon: '⚡',
+      desc: '150 kW DC fast charge. One per FATO. EASA PTS-VPT-DSN §5.4'
+    },
+    {
+      id: 'uav_charger', label: 'UAV Charger Array', shortLabel: 'UChg',
+      price: 0.18, color: '#101e00', border: '#4a7e00', textColor: '#8ec840',
+      gw: 2, gh: 1, shape: 'rect', icon: '⚡',
+      desc: '4-bay autonomous UAV charging. Auto-dock capable.'
+    },
+    {
+      id: 'terminal', label: 'Passenger Lounge', shortLabel: 'Term',
+      price: 3.50, color: '#041528', border: '#154478', textColor: '#6aace0',
+      gw: 6, gh: 4, shape: 'rect', icon: '⊞',
+      desc: 'Vertiport terminal: check-in, waiting, boarding. EASA PTS-VPT-DSN §2'
+    },
+    {
+      id: 'wind_mast', label: 'Wind Mast + Sensors', shortLabel: 'WMst',
+      price: 0.35, color: '#121212', border: '#484848', textColor: '#b0b0b0',
+      gw: 1, gh: 1, shape: 'circle', icon: '⊹',
+      desc: 'Met monitoring. Mandatory FAA EB 105A §3.1 & ICAO Annex 14'
+    }
+  ];
+
+  /* ── Site default bounding boxes (pre-surveyed rooftop footprints) ── */
+  /*
+   * SITE_BBOXES — pre-surveyed vertiport footprints for each candidate site.
+   * presetLayout: module placements for the 20×16 configurator grid (gx, gy = top-left cell).
+   * Used when entering Configurator from a preset site → modules appear pre-placed and draggable.
+   */
+  var SITE_BBOXES = {
+    /* 1. HKCEC / Wan Chai — R-M rooftop heliport conversion ~80×90 m
+          Polygon follows the flat roof of the HKCEC extension building
+          (reclaimed land, Wan Chai waterfront). Slightly trapezoidal
+          to match the building's south-west taper. */
+    'hkcec-wanchai': {
+      west: 114.1712, east: 114.1726, north: 22.2822, south: 22.2809,
+      polygon: [[114.1712,22.2821],[114.1726,22.2820],[114.1725,22.2809],[114.1713,22.2810]],
+      label: 'HKCEC / Wan Chai Rooftop Vertiport',
+      typeHint: 'Rooftop Medium · R-M (~80×90 m) · Heliport Conversion',
+      presetLayout: [
+        { id:'terminal',    gx:1,  gy:1 },   /* Passenger Lounge 6×4 */
+        { id:'evtol_fato',  gx:8,  gy:2 },   /* FATO 1  4×4 */
+        { id:'evtol_fato',  gx:14, gy:2 },   /* FATO 2  4×4 */
+        { id:'evtol_stand', gx:8,  gy:7 },   /* Stand 1 3×3 */
+        { id:'evtol_stand', gx:13, gy:7 },   /* Stand 2 3×3 */
+        { id:'ev_charger',  gx:8,  gy:11 },  /* Charger 1 2×1 */
+        { id:'ev_charger',  gx:13, gy:11 },  /* Charger 2 2×1 */
+        { id:'wind_mast',   gx:19, gy:1 }    /* Wind Mast 1×1 */
+      ]
+    },
+    /* 2. Pak Shek Kok / HKSTP — O-M open surface waterfront ~175×190 m
+          Polygon traces the waterfront promenade platform section.
+          SW corner nudged inward to avoid the water edge at low tide. */
+    'science-park-pak-shek-kok': {
+      west: 114.2028, east: 114.2053, north: 22.4302, south: 22.4279,
+      polygon: [[114.2028,22.4302],[114.2053,22.4298],[114.2055,22.4279],[114.2030,22.4283]],
+      label: 'Pak Shek Kok / HKSTP Waterfront Node',
+      typeHint: 'Open-Surface Medium · O-M (~175×190 m) · Campus Waterfront',
+      presetLayout: [
+        { id:'evtol_fato',  gx:1,  gy:2 },   /* FATO 1  4×4 */
+        { id:'evtol_fato',  gx:7,  gy:2 },   /* FATO 2  4×4 */
+        { id:'uav_pad',     gx:13, gy:1 },   /* UAV 1  2×2 */
+        { id:'uav_pad',     gx:16, gy:1 },   /* UAV 2  2×2 */
+        { id:'uav_pad',     gx:13, gy:4 },   /* UAV 3  2×2 */
+        { id:'uav_pad',     gx:16, gy:4 },   /* UAV 4  2×2 */
+        { id:'ev_charger',  gx:1,  gy:7 },   /* eVTOL Charger 2×1 */
+        { id:'uav_charger', gx:13, gy:7 },   /* UAV Charger 1 2×1 */
+        { id:'uav_charger', gx:16, gy:7 },   /* UAV Charger 2 2×1 */
+        { id:'wind_mast',   gx:19, gy:1 }    /* Wind Mast 1×1 */
+      ]
+    },
+    /* 3. Cyberport / East Lamma — F-S2 urban marina floating ~140×135 m
+          Floating pontoon in the Cyberport marina basin, south of the
+          main Phase 2 building. Slightly rotated to align with the
+          marina channel orientation. */
+    'cyberport-east-lamma': {
+      west: 114.1280, east: 114.1302, north: 22.2612, south: 22.2597,
+      polygon: [[114.1280,22.2611],[114.1301,22.2612],[114.1302,22.2597],[114.1281,22.2596]],
+      label: 'Cyberport Marina Floating Vertistop',
+      typeHint: 'Urban Marina Floating · F-S2 (~140×130 m) · Pontoon Platform',
+      presetLayout: [
+        { id:'evtol_fato',  gx:2,  gy:4 },   /* FATO 1  4×4 */
+        { id:'uav_pad',     gx:8,  gy:4 },   /* UAV 1  2×2 */
+        { id:'uav_pad',     gx:11, gy:4 },   /* UAV 2  2×2 */
+        { id:'ev_charger',  gx:2,  gy:9 },   /* Charger 2×1 */
+        { id:'uav_charger', gx:8,  gy:9 },   /* UAV Charger 2×1 */
+        { id:'wind_mast',   gx:14, gy:2 }    /* Wind Mast 1×1 */
+      ]
+    },
+    /* 4. China Merchants Wharf — O-S small wharf/logistics ~140×180 m
+          Polygon follows the Kennedy Town waterfront pier deck.
+          NE corner slightly clipped to avoid the seawall overhang. */
+    'china-merchants-wharf': {
+      west: 114.1246, east: 114.1267, north: 22.2866, south: 22.2847,
+      polygon: [[114.1246,22.2866],[114.1266,22.2863],[114.1267,22.2847],[114.1247,22.2850]],
+      label: 'China Merchants Wharf Logistics Node',
+      typeHint: 'Open-Surface Small · O-S (~140×175 m) · Waterfront Wharf',
+      presetLayout: [
+        { id:'evtol_fato',  gx:2,  gy:3 },   /* FATO 1  4×4 */
+        { id:'uav_pad',     gx:8,  gy:2 },   /* UAV 1  2×2 */
+        { id:'uav_pad',     gx:11, gy:2 },   /* UAV 2  2×2 */
+        { id:'uav_pad',     gx:14, gy:2 },   /* UAV 3  2×2 */
+        { id:'uav_charger', gx:8,  gy:5 },   /* UAV Charger 1 2×1 */
+        { id:'uav_charger', gx:11, gy:5 },   /* UAV Charger 2 2×1 */
+        { id:'wind_mast',   gx:18, gy:1 }    /* Wind Mast 1×1 */
+      ]
+    },
+    /* 5. Cheung Chau / St. John Hospital — F-S1 remote island node ~185×190 m
+          Small floating platform beside Cheung Chau ferry pier.
+          Polygon avoids the ferry berthing lane to the west. */
+    'cheung-chau-stjohn': {
+      west: 114.0283, east: 114.0310, north: 22.2114, south: 22.2093,
+      polygon: [[114.0285,22.2113],[114.0308,22.2112],[114.0309,22.2093],[114.0286,22.2094]],
+      label: 'Cheung Chau Island Medical Vertistop',
+      typeHint: 'Remote Coastal Floating · F-S1 (~185×190 m) · Island Medical Node',
+      presetLayout: [
+        { id:'evtol_fato',  gx:3,  gy:4 },   /* FATO 1  4×4 */
+        { id:'uav_pad',     gx:9,  gy:4 },   /* UAV 1  2×2 */
+        { id:'uav_pad',     gx:12, gy:4 },   /* UAV 2  2×2 */
+        { id:'uav_charger', gx:9,  gy:7 },   /* UAV Charger 2×1 */
+        { id:'wind_mast',   gx:16, gy:2 }    /* Wind Mast 1×1 */
+      ]
+    },
+
+    /* ═══ SHENZHEN GBA SITES ═══════════════════════════════════════════ */
+
+    /* SZ-1. Qianhai Free Trade Hub — waterfront commercial platform ~200×150 m */
+    'qianhai-hub': {
+      west: 113.8912, east: 113.8934, north: 22.5143, south: 22.5126,
+      polygon: [[113.8912,22.5143],[113.8934,22.5140],[113.8933,22.5126],[113.8913,22.5128]],
+      label: 'Qianhai Free Trade Hub Vertiport',
+      typeHint: 'Waterfront Commercial · O-M (~200×150 m) · FTZ Node',
+      presetLayout: [
+        { id:'terminal',    gx:1,  gy:1 },
+        { id:'evtol_fato',  gx:8,  gy:1 },
+        { id:'evtol_fato',  gx:14, gy:1 },
+        { id:'ev_charger',  gx:8,  gy:6 },
+        { id:'ev_charger',  gx:14, gy:6 },
+        { id:'wind_mast',   gx:19, gy:1 }
+      ]
+    },
+    /* SZ-2. Bao'an Dachawan (Approved) — waterfront logistics hub ~240×180 m */
+    'baoan-dachawan': {
+      west: 113.8480, east: 113.8507, north: 22.5682, south: 22.5661,
+      polygon: [[113.8480,22.5682],[113.8507,22.5679],[113.8506,22.5661],[113.8481,22.5663]],
+      label: "Bao'an Dachawan Waterfront Hub",
+      typeHint: 'Open-Surface Large · O-L (~240×180 m) · Approved Site',
+      presetLayout: [
+        { id:'terminal',    gx:1,  gy:1 },
+        { id:'evtol_fato',  gx:8,  gy:1 },
+        { id:'evtol_fato',  gx:13, gy:1 },
+        { id:'evtol_stand', gx:8,  gy:6 },
+        { id:'evtol_stand', gx:13, gy:6 },
+        { id:'ev_charger',  gx:8,  gy:10 },
+        { id:'ev_charger',  gx:13, gy:10 },
+        { id:'wind_mast',   gx:19, gy:1 }
+      ]
+    },
+    /* SZ-3. Shekou Cruise (Approved) — cruise terminal rooftop ~160×120 m */
+    'shekou-cruise': {
+      west: 113.9023, east: 113.9041, north: 22.4872, south: 22.4859,
+      polygon: [[113.9023,22.4872],[113.9041,22.4870],[113.9040,22.4859],[113.9024,22.4860]],
+      label: 'Shekou Cruise Terminal Vertiport',
+      typeHint: 'Rooftop Large · R-L (~160×120 m) · Approved Site',
+      presetLayout: [
+        { id:'terminal',    gx:1,  gy:2 },
+        { id:'evtol_fato',  gx:8,  gy:2 },
+        { id:'evtol_fato',  gx:13, gy:2 },
+        { id:'ev_charger',  gx:8,  gy:7 },
+        { id:'uav_pad',     gx:14, gy:7 },
+        { id:'wind_mast',   gx:19, gy:1 }
+      ]
+    },
+    /* SZ-4. Guangming Science City (Approved) — campus open surface ~300×250 m */
+    'guangming-science': {
+      west: 113.9310, east: 113.9342, north: 22.7563, south: 22.7540,
+      polygon: [[113.9310,22.7563],[113.9342,22.7560],[113.9341,22.7540],[113.9311,22.7542]],
+      label: 'Guangming Science City Campus Node',
+      typeHint: 'Open-Surface XLarge · O-XL (~300×250 m) · Approved Site',
+      presetLayout: [
+        { id:'terminal',    gx:1,  gy:1 },
+        { id:'evtol_fato',  gx:7,  gy:1 },
+        { id:'evtol_fato',  gx:13, gy:1 },
+        { id:'uav_pad',     gx:1,  gy:7 },
+        { id:'uav_pad',     gx:4,  gy:7 },
+        { id:'uav_charger', gx:1,  gy:10 },
+        { id:'ev_charger',  gx:7,  gy:7 },
+        { id:'wind_mast',   gx:19, gy:1 }
+      ]
+    },
+    /* SZ-5. Futian CBD — rooftop convention centre ~100×80 m */
+    'futian-cbd': {
+      west: 114.0548, east: 114.0562, north: 22.5228, south: 22.5218,
+      polygon: [[114.0548,22.5228],[114.0562,22.5226],[114.0561,22.5218],[114.0549,22.5219]],
+      label: 'Futian CBD Convention Centre Vertiport',
+      typeHint: 'Rooftop Medium · R-M (~100×80 m) · CBD Hub',
+      presetLayout: [
+        { id:'terminal',    gx:1,  gy:2 },
+        { id:'evtol_fato',  gx:8,  gy:2 },
+        { id:'ev_charger',  gx:8,  gy:7 },
+        { id:'wind_mast',   gx:16, gy:1 }
+      ]
+    },
+    /* SZ-6. Longhua Heliport (Approved) — existing helipad conversion ~120×100 m */
+    'longhua-heliport': {
+      west: 114.0313, east: 114.0327, north: 22.6870, south: 22.6858,
+      polygon: [[114.0313,22.6870],[114.0327,22.6868],[114.0326,22.6858],[114.0314,22.6859]],
+      label: 'Longhua Heliport Urban Node',
+      typeHint: 'Heliport Conversion · R-S (~120×100 m) · Approved Site',
+      presetLayout: [
+        { id:'evtol_fato',  gx:4,  gy:4 },
+        { id:'evtol_stand', gx:4,  gy:9 },
+        { id:'ev_charger',  gx:8,  gy:9 },
+        { id:'wind_mast',   gx:16, gy:2 }
+      ]
+    },
+    /* SZ-7. Dapeng Bagua Ridge (Approved) — scenic scenic tourism node ~180×160 m */
+    'dapeng-bagua': {
+      west: 114.4780, east: 114.4801, north: 22.5318, south: 22.5299,
+      polygon: [[114.4780,22.5318],[114.4801,22.5315],[114.4800,22.5299],[114.4781,22.5301]],
+      label: 'Dapeng Bagua Ridge Tourism Vertistop',
+      typeHint: 'Open-Surface Medium · O-M (~180×160 m) · Approved Tourism Node',
+      presetLayout: [
+        { id:'evtol_fato',  gx:3,  gy:3 },
+        { id:'uav_pad',     gx:9,  gy:3 },
+        { id:'uav_pad',     gx:12, gy:3 },
+        { id:'uav_charger', gx:9,  gy:6 },
+        { id:'wind_mast',   gx:17, gy:2 }
+      ]
+    },
+    /* SZ-8. Luohu Border Trade — cross-border gateway rooftop ~100×90 m */
+    'luohu-border': {
+      west: 114.1155, east: 114.1168, north: 22.5339, south: 22.5328,
+      polygon: [[114.1155,22.5339],[114.1168,22.5337],[114.1167,22.5328],[114.1156,22.5329]],
+      label: 'Luohu Cross-Border Gateway Vertiport',
+      typeHint: 'Rooftop Small · R-S (~100×90 m) · Cross-Border Node',
+      presetLayout: [
+        { id:'terminal',    gx:1,  gy:3 },
+        { id:'evtol_fato',  gx:8,  gy:3 },
+        { id:'ev_charger',  gx:8,  gy:8 },
+        { id:'wind_mast',   gx:15, gy:1 }
+      ]
+    },
+    /* SZ-9. Yantian Port Logistics — port logistics hub ~220×180 m */
+    'yantian-port': {
+      west: 114.2843, east: 114.2868, north: 22.5790, south: 22.5769,
+      polygon: [[114.2843,22.5790],[114.2868,22.5787],[114.2867,22.5769],[114.2844,22.5771]],
+      label: 'Yantian International Port Vertiport',
+      typeHint: 'Open-Surface Large · O-L (~220×180 m) · Logistics Hub',
+      presetLayout: [
+        { id:'evtol_fato',  gx:2,  gy:2 },
+        { id:'evtol_fato',  gx:8,  gy:2 },
+        { id:'uav_pad',     gx:14, gy:2 },
+        { id:'uav_pad',     gx:17, gy:2 },
+        { id:'uav_charger', gx:14, gy:5 },
+        { id:'uav_charger', gx:17, gy:5 },
+        { id:'wind_mast',   gx:19, gy:1 }
+      ]
+    },
+    /* SZ-10. Pingshan EV Valley — industrial campus open node ~250×200 m */
+    'pingshan-ev': {
+      west: 114.3620, east: 114.3648, north: 22.6812, south: 22.6789,
+      polygon: [[114.3620,22.6812],[114.3648,22.6809],[114.3647,22.6789],[114.3621,22.6791]],
+      label: 'Pingshan EV Innovation Valley Node',
+      typeHint: 'Open-Surface XLarge · O-XL (~250×200 m) · Industrial Campus',
+      presetLayout: [
+        { id:'terminal',    gx:1,  gy:1 },
+        { id:'evtol_fato',  gx:7,  gy:1 },
+        { id:'evtol_fato',  gx:13, gy:1 },
+        { id:'uav_pad',     gx:1,  gy:7 },
+        { id:'uav_pad',     gx:4,  gy:7 },
+        { id:'uav_charger', gx:1,  gy:10 },
+        { id:'ev_charger',  gx:7,  gy:7 },
+        { id:'wind_mast',   gx:19, gy:1 }
+      ]
+    },
+
+    /* ═══ GUANGZHOU SITES ═══════════════════════════════════════════════ */
+
+    /* GZ-1. Nansha Mingzhu Bay — waterfront smart city node ~280×220 m */
+    'nansha-mingzhubay': {
+      west: 113.5320, east: 113.5351, north: 22.7983, south: 22.7958,
+      polygon: [[113.5320,22.7983],[113.5351,22.7980],[113.5350,22.7958],[113.5321,22.7960]],
+      label: 'Nansha Mingzhu Bay Smart City Node',
+      typeHint: 'Waterfront XLarge · O-XL (~280×220 m) · Smart City Hub',
+      presetLayout: [
+        { id:'terminal',    gx:1,  gy:1 },
+        { id:'evtol_fato',  gx:7,  gy:1 },
+        { id:'evtol_fato',  gx:13, gy:1 },
+        { id:'uav_pad',     gx:2,  gy:7 },
+        { id:'uav_charger', gx:2,  gy:10 },
+        { id:'ev_charger',  gx:7,  gy:7 },
+        { id:'wind_mast',   gx:19, gy:1 }
+      ]
+    },
+    /* GZ-2. Huangpu Knowledge City (Approved) — campus rooftop ~140×120 m */
+    'huangpu-knowledge': {
+      west: 113.4748, east: 113.4764, north: 23.1892, south: 23.1878,
+      polygon: [[113.4748,23.1892],[113.4764,23.1890],[113.4763,23.1878],[113.4749,23.1879]],
+      label: 'Huangpu Knowledge City Campus Hub',
+      typeHint: 'Rooftop Medium · R-M (~140×120 m) · Approved Knowledge Economy',
+      presetLayout: [
+        { id:'terminal',    gx:1,  gy:2 },
+        { id:'evtol_fato',  gx:8,  gy:2 },
+        { id:'evtol_fato',  gx:14, gy:2 },
+        { id:'ev_charger',  gx:8,  gy:7 },
+        { id:'ev_charger',  gx:14, gy:7 },
+        { id:'wind_mast',   gx:19, gy:1 }
+      ]
+    },
+
+    /* ═══ ZHUHAI SITES ══════════════════════════════════════════════════ */
+
+    /* ZH-1. Hengqin Macao Co-op Zone — smart zone waterfront ~220×180 m */
+    'hengqin-macao': {
+      west: 113.5368, east: 113.5393, north: 22.1245, south: 22.1224,
+      polygon: [[113.5368,22.1245],[113.5393,22.1242],[113.5392,22.1224],[113.5369,22.1226]],
+      label: 'Hengqin Macao Co-op Zone Vertiport',
+      typeHint: 'Waterfront Large · O-L (~220×180 m) · Cross-Border Macao Node',
+      presetLayout: [
+        { id:'terminal',    gx:1,  gy:1 },
+        { id:'evtol_fato',  gx:7,  gy:1 },
+        { id:'evtol_fato',  gx:13, gy:1 },
+        { id:'ev_charger',  gx:7,  gy:6 },
+        { id:'ev_charger',  gx:13, gy:6 },
+        { id:'wind_mast',   gx:19, gy:1 }
+      ]
+    },
+    /* ZH-2. Jinwan Aviation City — airport adjacent ~200×160 m */
+    'jinwan-aviation': {
+      west: 113.4088, east: 113.4111, north: 22.4188, south: 22.4169,
+      polygon: [[113.4088,22.4188],[113.4111,22.4185],[113.4110,22.4169],[113.4089,22.4171]],
+      label: 'Jinwan Aviation City eVTOL Terminal',
+      typeHint: 'Airport-Adjacent · O-L (~200×160 m) · Aviation Ecosystem Hub',
+      presetLayout: [
+        { id:'terminal',    gx:1,  gy:1 },
+        { id:'evtol_fato',  gx:7,  gy:1 },
+        { id:'evtol_fato',  gx:13, gy:1 },
+        { id:'evtol_stand', gx:7,  gy:6 },
+        { id:'evtol_stand', gx:13, gy:6 },
+        { id:'ev_charger',  gx:7,  gy:10 },
+        { id:'wind_mast',   gx:19, gy:1 }
+      ]
+    },
+    /* ZH-3. Wanshan Islands (Approved) — remote island medical node ~160×130 m */
+    'wanshan-islands': {
+      west: 113.7188, east: 113.7207, north: 21.9348, south: 21.9333,
+      polygon: [[113.7188,21.9348],[113.7207,21.9346],[113.7206,21.9333],[113.7189,21.9334]],
+      label: 'Wanshan Archipelago Island Vertistop',
+      typeHint: 'Remote Island · F-S1 (~160×130 m) · Approved Marine Node',
+      presetLayout: [
+        { id:'evtol_fato',  gx:3,  gy:4 },
+        { id:'uav_pad',     gx:9,  gy:4 },
+        { id:'uav_pad',     gx:12, gy:4 },
+        { id:'uav_charger', gx:9,  gy:7 },
+        { id:'wind_mast',   gx:16, gy:2 }
+      ]
+    }
+  };
+
+  /* ── Configurator state ── */
+  var GRID_COLS = 20;
+  var GRID_ROWS = 16;
+  var selMode   = 'idle';   // 'idle' | 'drawing' | 'confirm' | 'configuring'
+  var selPoints = [];   /* [{lng,lat}, …] up to 4 pts — 4-click polygon selection */
+  var selBbox   = null;
+  var placedModules = [];
+  var currentDrag   = null;
+  var overlayW = 0, overlayH = 0;
+  var overlayPolyPts = null; /* normalized screen-space polygon corners for clipPath */
+  var _onMapClickSel = null;
+  var _onMapMoveSel  = null;
+
+  /* ── Helpers ── */
+  function getSite(id) { return D.sites.find(function(s){ return s.id === id; }); }
+  function getPersona(name) { return D.personas.find(function(p){ return p.name === name; }) || D.personas[D.personas.length-1]; }
+  function composite(site, weights) {
+    var s = site.scores;
+    return s.safety*(weights.safety||0) + s.implementation*(weights.implementation||0) +
+           s.regulation*(weights.regulation||0) + s.operations*(weights.operations||0) +
+           s.network*(weights.network||0) + s.investment*(weights.investment||0) +
+           (s.power||0)*(weights.power||0) + (s.structural||0)*(weights.structural||0) +
+           (s.ground||0)*(weights.ground||0) + (s.weather||0)*(weights.weather||0) +
+           (s.comms||0)*(weights.comms||0);
+  }
+  function feasLabel(score) {
+    if (score >= 88) return ['Priority','priority'];
+    if (score >= 78) return ['Green','green-s'];
+    if (score >= 68) return ['Amber','amber-s'];
+    return ['Red','red-s'];
+  }
+  function gateLabel(status) {
+    return { pass: 'Pass', warning: 'Review', fail: 'Blocking' }[status] || 'Pending';
+  }
+  function syncUrl() {
+    var u = new URL(window.location.href);
+    u.searchParams.set('site', selectedSiteId);
+    u.searchParams.set('plan', selectedPlan);
+    u.searchParams.set('persona', selectedPersona);
+    u.searchParams.set('city', selectedCity);
+    window.history.replaceState({}, '', u.toString());
+  }
+  function buildUrl(page, extra) {
+    extra = extra || {};
+    var u = new URL(window.location.href);
+    u.searchParams.set('site', selectedSiteId);
+    u.searchParams.set('plan', selectedPlan);
+    u.searchParams.set('persona', selectedPersona);
+    Object.keys(extra).forEach(function(k){ u.searchParams.set(k, extra[k]); });
+    var files = { overview:'index.html', map:'map.html', detail:'site-detail.html',
+                  configurator:'configurator.html', simulation:'simulation.html', decision:'decision.html' };
+    return (files[page] || page) + '?' + u.searchParams.toString();
+  }
+
+  /* ── MapLibre Init ── */
+  function initMap() {
+    map = new maplibregl.Map({
+      container: 'mapCanvas',
+      style: 'https://tiles.openfreemap.org/styles/bright',
+      center: [114.17, 22.315],
+      zoom: 12.5, pitch: 55, bearing: -15, antialias: true
+    });
+    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
+    map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
+
+    map.on('style.load', function() {
+      add3DBuildings();
+      addAnalysisLayers();
+      addSiteMarkers();
+      /* Selection rectangle source + layers */
+      map.addSource('sel-rect', {
+        type: 'geojson',
+        data: { type: 'Feature', geometry: { type: 'Polygon', coordinates: [[]] } }
+      });
+      map.addLayer({
+        id: 'sel-rect-fill', type: 'fill', source: 'sel-rect',
+        paint: { 'fill-color': 'rgba(228,116,108,0.10)' }
+      });
+      map.addLayer({
+        id: 'sel-rect-line', type: 'line', source: 'sel-rect',
+        paint: { 'line-color': '#E4746C', 'line-width': 2.5, 'line-dasharray': [6, 3] }
+      });
+      /* Selection corner-point dots source + layers */
+      map.addSource('sel-points', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] }
+      });
+      map.addLayer({
+        id: 'sel-points-halo', type: 'circle', source: 'sel-points',
+        paint: { 'circle-radius': 10, 'circle-color': 'rgba(228,116,108,0.18)', 'circle-stroke-width': 0 }
+      });
+      map.addLayer({
+        id: 'sel-points-core', type: 'circle', source: 'sel-points',
+        paint: { 'circle-radius': 5, 'circle-color': '#E4746C', 'circle-stroke-width': 2, 'circle-stroke-color': '#fff' }
+      });
+      addAirspaceLayers();
+      addSitePresetBboxLayers();
+    });
+
+    document.getElementById('btnReset').addEventListener('click', function() {
+      flyToCity(selectedCity);
+    });
+  }
+
+  /* ── 3D Buildings ── */
+  function add3DBuildings() {
+    try {
+      var style = map.getStyle();
+      var sourceId = Object.keys(style.sources || {}).find(function(s){
+        return style.sources[s].type === 'vector' || s.includes('openmaptiles') || s.includes('planet');
+      }) || 'openmaptiles';
+      if (map.getLayer('building')) map.removeLayer('building');
+      map.addLayer({
+        id: '3d-buildings-extrusion', source: sourceId, 'source-layer': 'building',
+        type: 'fill-extrusion', minzoom: 10,
+        paint: {
+          'fill-extrusion-color': ['interpolate',['linear'],['coalesce',['get','render_height'],['get','height'],10],
+            0,'#c8dde8', 30,'#a8c4d3', 80,'#7fa5b5', 150,'#5b8799', 300,'#3d6e86'],
+          'fill-extrusion-height': ['coalesce',['get','render_height'],['get','height'],5],
+          'fill-extrusion-base':   ['coalesce',['get','render_min_height'],['get','min_height'],0],
+          'fill-extrusion-opacity': 0.88
+        }
+      }, 'waterway-label');
+    } catch(e) { console.warn('3D buildings skipped:', e.message); }
+  }
+
+  /* ── Analysis layers ── */
+  function addAnalysisLayers() {
+    var w = getPersona(selectedPersona).weights;
+    D.sites.forEach(function(site) {
+      var isSelected = site.id === selectedSiteId;
+      map.addSource('airspace-' + site.id, { type:'geojson', data:{ type:'Feature', geometry:{ type:'Point', coordinates:[site.lng, site.lat] } } });
+      map.addLayer({ id:'airspace-fill-'+site.id, type:'circle', source:'airspace-'+site.id,
+        paint: { 'circle-radius':['interpolate',['linear'],['zoom'],10,20,14,80],
+          'circle-color': isSelected ? 'rgba(217,184,124,0.12)' : 'rgba(224,139,98,0.06)',
+          'circle-stroke-color': isSelected ? 'rgba(217,184,124,0.6)' : 'rgba(224,139,98,0.3)',
+          'circle-stroke-width': isSelected ? 2 : 1 } });
+      map.addSource('coverage-' + site.id, { type:'geojson', data:{ type:'Feature', geometry:{ type:'Point', coordinates:[site.lng, site.lat] } } });
+      map.addLayer({ id:'coverage-fill-'+site.id, type:'circle', source:'coverage-'+site.id,
+        paint: { 'circle-radius':['interpolate',['linear'],['zoom'],9,35,12,160,14,320],
+          'circle-color':'rgba(111,211,180,0.04)', 'circle-stroke-color':'rgba(111,211,180,0.18)',
+          'circle-stroke-width':1, 'circle-stroke-dasharray':[3,4] } });
+    });
+    addRouteLines();
+  }
+
+  function addRouteLines() {
+    var site = getSite(selectedSiteId);
+    if (!site || !site.routes) return;
+    ['route-line','route-glow'].forEach(function(id){
+      if (map.getLayer(id)) map.removeLayer(id);
+      if (map.getSource(id)) map.removeSource(id);
+    });
+    /* Build lookup from all sites + hardcoded off-network destinations */
+    var destCoords = { 'HKIA SkyCity': [113.9129, 22.3094] };
+    D.sites.forEach(function(s){ destCoords[s.name] = [s.lng, s.lat]; });
+    var features = site.routes.map(function(r){
+      var dest = destCoords[r.destination];
+      if (!dest) return null;
+      return { type:'Feature', properties:{ name:r.name },
+               geometry:{ type:'LineString', coordinates:[[site.lng, site.lat], dest] } };
+    }).filter(Boolean);
+    if (!features.length) return;
+    map.addSource('route-line', { type:'geojson', data:{ type:'FeatureCollection', features:features } });
+    map.addLayer({ id:'route-glow', type:'line', source:'route-line',
+      paint:{ 'line-color':'rgba(100,160,255,0.15)', 'line-width':10, 'line-blur':8 } });
+    map.addLayer({ id:'route-line', type:'line', source:'route-line',
+      paint:{ 'line-color':'rgba(100,160,255,0.7)', 'line-width':2, 'line-dasharray':[4,3] } });
+  }
+
+  /* ── Site markers — radar-pulse style ── */
+  var _activeSitePopup = null;
+
+  function _radarMarkerHtml(site, score, isActive) {
+    var lat = site.lat.toFixed(4);
+    var lng = site.lng.toFixed(4);
+    var apv = site.approved === true;
+    var ringCls = apv ? ' apv' : '';
+    var coreCls = 'radar-core' + (apv ? ' approved' : '');
+    return '<div class="site-radar-wrap' + (isActive ? ' active' : '') + '" data-sid="' + site.id + '">' +
+      '<div class="radar-ring' + ringCls + '"></div>' +
+      '<div class="radar-ring' + ringCls + '"></div>' +
+      '<div class="radar-ring' + ringCls + '"></div>' +
+      '<div class="' + coreCls + '">' +
+        (apv ? '<div class="radar-apv-badge">✓</div>' : '') +
+        '<span class="radar-score">' + Math.round(score) + '</span>' +
+      '</div>' +
+      '<div class="radar-label">' +
+        (apv ? '<div style="font-size:9px;color:#E08B62;font-weight:800;letter-spacing:.04em;margin-bottom:2px">APPROVED</div>' : '') +
+        '<div class="radar-name">' + site.shortName + '</div>' +
+        '<div class="radar-node-type">' + (site.nodeType || site.type.split('·')[0].trim()) + '</div>' +
+        '<div class="radar-coords">' + lat + '°N  ' + lng + '°E</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function openSitePopup(site) {
+    if (_activeSitePopup) { _activeSitePopup.remove(); _activeSitePopup = null; }
+    var w = getPersona(selectedPersona).weights;
+    var score = composite(site, w);
+    var plan = site.plans[selectedPlan];
+    var html =
+      '<div class="sp-header">' +
+        '<div class="sp-node-badge">' + (site.nodeType || site.type.split(' / ')[0]) + '</div>' +
+        '<div class="sp-title">' + site.name + '</div>' +
+        '<div class="sp-district">' + site.district + ' · ' + site.assetClass + '</div>' +
+      '</div>' +
+      '<div class="sp-body">' +
+        '<div class="sp-score-row">' +
+          '<div class="sp-score-big">' + Math.round(score) + '</div>' +
+          '<div class="sp-score-label">Composite<br>Site Score</div>' +
+        '</div>' +
+        '<div class="sp-summary">' + site.tagline + '</div>' +
+        '<div class="sp-capex-row">' +
+          '<div class="sp-capex-chip"><span>CAPEX (' + selectedPlan + ')</span><strong>HK$' + plan.capex.toFixed(1) + 'M</strong></div>' +
+          '<div class="sp-capex-chip"><span>Throughput</span><strong>' + plan.throughput + ' ops/h</strong></div>' +
+          '<div class="sp-capex-chip"><span>Feasibility</span><strong>' + plan.feasibility + '/100</strong></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="sp-btns">' +
+        '<button class="sp-btn-detail" id="_spDetail">View Analysis →</button>' +
+        '<button class="sp-btn-cfg" id="_spCfg">Define Site Area ⬛</button>' +
+      '</div>';
+
+    _activeSitePopup = new maplibregl.Popup({ closeButton: true, className: 'site-popup', offset: 20 })
+      .setLngLat([site.lng, site.lat])
+      .setHTML(html)
+      .addTo(map);
+
+    /* Wire buttons after popup DOM is inserted */
+    _activeSitePopup.once('open', function() {
+      var detBtn = document.getElementById('_spDetail');
+      var cfgBtn = document.getElementById('_spCfg');
+      if (detBtn) detBtn.addEventListener('click', function() {
+        window.location.href = buildUrl('detail', { site: site.id, plan: selectedPlan });
+      });
+      if (cfgBtn) cfgBtn.addEventListener('click', function() {
+        _activeSitePopup.remove(); _activeSitePopup = null;
+        selectedSiteId = site.id;
+        var bbox = SITE_BBOXES[site.id];
+        if (bbox) {
+          selBbox = bbox;
+          updateSelRectOnMap(selBbox);
+          selMode = 'confirm';
+          showConfirmModal();
+        } else {
+          selectSite(site.id);
+          enterSelMode();
+        }
+      });
+    });
+  }
+
+  function addSiteMarkers() {
+    var w = getPersona(selectedPersona).weights;
+    var visibleSites = D.sites.filter(function(s) { return cityMatch(s, selectedCity); });
+    visibleSites.forEach(function(site) {
+      var score = composite(site, w);
+      var isActive = site.id === selectedSiteId;
+      var el = document.createElement('div');
+      el.innerHTML = _radarMarkerHtml(site, score, isActive);
+      var wrap = el.firstChild;
+      wrap.addEventListener('click', function(e) {
+        e.stopPropagation();
+        selectSite(site.id);
+        openSitePopup(site);
+      });
+      var marker = new maplibregl.Marker({ element: wrap, anchor: 'center' })
+        .setLngLat([site.lng, site.lat]).addTo(map);
+      markersMap[site.id] = marker;
+    });
+  }
+
+  function updateMarkers() {
+    var w = getPersona(selectedPersona).weights;
+    D.sites.forEach(function(site) {
+      var el = markersMap[site.id] && markersMap[site.id].getElement();
+      if (!el) return;
+      var score = composite(site, w);
+      var isActive = site.id === selectedSiteId;
+      /* Swap active class on existing wrapper without full re-render to preserve listeners */
+      el.className = 'site-radar-wrap' + (isActive ? ' active' : '');
+      var scoreEl = el.querySelector('.radar-score');
+      if (scoreEl) scoreEl.textContent = Math.round(score);
+    });
+  }
+
+  /* ── Select site ── */
+  function selectSite(siteId) {
+    selectedSiteId = siteId;
+    syncUrl();
+    var site = getSite(siteId);
+    map.flyTo({ center:[site.lng, site.lat], zoom:14.5, pitch:58, duration:900 });
+    updateMarkers();
+    renderLeftSiteList();
+    renderRightDetail();
+    addRouteLines();
+  }
+
+  /* ── Plan tabs ── */
+  function renderPlanTabs() {
+    var host = document.getElementById('mapPlanTabs');
+    var plans = [{ key:'lean',label:'Lean' },{ key:'standard',label:'Standard' },{ key:'enhanced',label:'Enhanced' }];
+    host.innerHTML = plans.map(function(p){ return '<button class="tier-tab ' + (p.key===selectedPlan?'active':'') + '" data-plan="'+p.key+'">'+p.label+'</button>'; }).join('');
+    host.querySelectorAll('[data-plan]').forEach(function(b){ b.addEventListener('click', function(){ selectedPlan = b.dataset.plan; syncUrl(); rerender(); }); });
+  }
+
+  /* ── Persona tabs ── */
+  function renderPersonaTabs() {
+    var host = document.getElementById('mapPersonaTabs');
+    host.innerHTML = D.personas.map(function(p){ return '<button class="tier-tab ' + (p.name===selectedPersona?'active':'') + '" data-persona="'+p.name+'">'+p.name+'</button>'; }).join('');
+    host.querySelectorAll('[data-persona]').forEach(function(b){ b.addEventListener('click', function(){ selectedPersona = b.dataset.persona; syncUrl(); rerender(); }); });
+  }
+
+  /* ── Left panel site list ── */
+  function renderLeftSiteList() {
+    var host = document.getElementById('mapSiteList');
+    var w = getPersona(selectedPersona).weights;
+    var citySites = D.sites.filter(function(s) { return cityMatch(s, selectedCity); });
+    var ranked = citySites.map(function(s){ return { site:s, score:composite(s, w) }; }).sort(function(a,b){ return b.score - a.score; });
+    /* Update site count label */
+    var countEl = document.getElementById('siteCountLabel');
+    if (countEl) countEl.textContent = ranked.length + ' sites · ranked';
+    host.innerHTML = ranked.map(function(item) {
+      var site = item.site, score = item.score;
+      var plan = site.plans[selectedPlan];
+      var isActive = site.id === selectedSiteId;
+      var gatesOk = site.hardGates.every(function(g){ return g.status !== 'fail'; });
+      var isApv = site.approved === true;
+      var cur = site.currency === 'RMB' ? '¥' : 'HK$';
+      var apvDot = isApv ? '<div class="site-status-dot" style="background:#E4746C;box-shadow:0 0 6px rgba(228,116,108,0.7)"></div>' : '<div class="site-status-dot ' + (gatesOk?'':'amber') + '"></div>';
+      return '<div class="site-item ' + (isActive?'active':'') + '" data-site="'+site.id+'">' +
+        '<div class="site-score-ring">' + score.toFixed(0) + '</div>' +
+        '<div class="site-item-info"><div class="site-item-name">' + site.shortName + '</div>' +
+        '<div class="site-item-type">' + site.district + ' · ' + site.type.split(' / ')[0] + '</div>' +
+        '<div style="margin-top:4px;font-size:11px;color:var(--ink-faint)">' + cur + plan.capex.toFixed(1) + 'M · ' + plan.throughput + ' pax/h</div></div>' +
+        apvDot + '</div>';
+    }).join('');
+    host.querySelectorAll('[data-site]').forEach(function(b){ b.addEventListener('click', function(){ selectSite(b.dataset.site); }); });
+  }
+
+  /* ── Right detail panel ── */
+  function renderRightDetail() {
+    var host = document.getElementById('mapDetailPanel');
+    var site = getSite(selectedSiteId);
+    if (!site) return;
+    var w = getPersona(selectedPersona).weights;
+    var score = composite(site, w);
+    var plan = site.plans[selectedPlan];
+    var feasArr = feasLabel(plan.feasibility);
+    var feasText = feasArr[0], feasClass = feasArr[1];
+    var scoreLabels = { safety:'Safety & Airspace', implementation:'Implementation', regulation:'Regulatory', operations:'Ops Fit', network:'Network Value', investment:'Investment', power:'Power Grid', structural:'Structural Load', ground:'Ground Access', weather:'Weather Reliability', comms:'5G / Comms' };
+    var scoreBars = Object.keys(site.scores).map(function(k) {
+      var v = site.scores[k];
+      var cls = v >= 85 ? 'hi' : v >= 70 ? 'mid' : 'lo';
+      return '<div class="score-row-item"><span class="score-row-label">' + (scoreLabels[k]||k) + '</span><div class="score-bar-bg"><div class="score-bar-fill ' + cls + '" style="width:' + v + '%"></div></div><span class="score-val">' + v + '</span></div>';
+    }).join('');
+    var gates = site.hardGates.map(function(g) {
+      return '<div class="gate-item ' + g.status + '"><div class="gate-status-row"><span class="gate-name">' + g.name + '</span><span class="gate-pill ' + g.status + '">' + gateLabel(g.status) + '</span></div><div style="font-size:11px;color:var(--ink-faint)">' + g.note + '</div></div>';
+    }).join('');
+    host.innerHTML =
+      '<div class="glass-card">' +
+        '<div style="display:flex;align-items:flex-start;gap:12px">' +
+          '<div class="big-score-ring"><span>' + score.toFixed(0) + '</span></div>' +
+          '<div style="flex:1"><div class="eyebrow">' + site.district + ' · ' + site.assetClass + '</div>' +
+          '<h2 style="font-size:16px;font-weight:900;color:var(--ink);margin-top:4px">' + site.name + '</h2>' +
+          '<span class="status-pill ' + feasClass + '" style="margin-top:6px;display:inline-flex">' + feasText + ' · ' + plan.label + '</span></div></div>' +
+        '<p class="detail-summary-text">' + site.tagline + '</p>' +
+        '<div class="metrics-grid">' +
+          '<div class="metric-cell"><span>CAPEX</span><strong style="font-size:14px">HK$ ' + plan.capex.toFixed(1) + 'M</strong></div>' +
+          '<div class="metric-cell"><span>Throughput</span><strong style="font-size:14px">' + plan.throughput + ' pax/h</strong></div>' +
+          '<div class="metric-cell"><span>Turnaround</span><strong style="font-size:14px">' + plan.turnaround + ' min</strong></div>' +
+          '<div class="metric-cell"><span>OPEX / yr</span><strong style="font-size:14px">HK$ ' + plan.opex.toFixed(2) + 'M</strong></div>' +
+          '<div class="metric-cell"><span>Peak Power</span><strong style="font-size:14px">' + plan.power.toFixed(1) + ' MW</strong></div>' +
+          '<div class="metric-cell"><span>Delivery</span><strong style="font-size:14px">' + site.finance.deliveryMonths + ' mo</strong></div>' +
+        '</div>' +
+        '<div class="cta-row">' +
+          '<a class="btn-primary" href="' + buildUrl('detail') + '">Site Detail →</a>' +
+          '<button class="btn-secondary" id="rightPanelCfgBtn">Configure on Map</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="glass-card"><div class="panel-section-title">Score Breakdown</div><div class="score-rows">' + scoreBars + '</div></div>' +
+      '<div class="glass-card"><div class="panel-section-title">Hard Gates (FAA EB 105A / EASA PTS-VPT-DSN)</div><div class="gate-list">' + gates + '</div></div>' +
+      '<div class="glass-card"><div class="panel-section-title">Key Risks</div>' +
+        '<div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">' +
+        site.risks.map(function(r){
+          var bg = r.level==='High'?'rgba(224,139,98,0.15)':r.level==='Medium'?'rgba(227,196,142,0.15)':'rgba(255,255,255,0.08)';
+          var col = r.level==='High'?'var(--clay)':r.level==='Medium'?'var(--amber)':'var(--ink-faint)';
+          return '<div style="padding:10px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid var(--glass-border)">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">' +
+            '<span style="font-weight:700;font-size:12px;color:var(--ink)">' + r.title + '</span>' +
+            '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:' + bg + ';color:' + col + '">' + r.level + '</span></div>' +
+            '<div style="font-size:11px;color:var(--ink-faint);line-height:1.5">' + r.text + '</div></div>';
+        }).join('') +
+        '</div>' +
+        '<div class="cta-row"><a class="btn-primary" href="' + buildUrl('simulation', {route:site.routes[0].id}) + '">Route Simulation →</a><a class="btn-secondary" href="' + buildUrl('decision') + '">Investment Board</a></div>' +
+      '</div>';
+
+    /* Bind "Configure on Map" button */
+    var cfgBtn = host.querySelector('#rightPanelCfgBtn');
+    if (cfgBtn) {
+      cfgBtn.addEventListener('click', function() {
+        if (selMode !== 'idle') return;
+        var bbox = SITE_BBOXES[selectedSiteId];
+        if (bbox) {
+          selBbox = bbox;
+          updateSelRectOnMap(selBbox);
+          selMode = 'confirm';
+          showConfirmModal();
+        } else {
+          enterSelMode();
+        }
+      });
+    }
+  }
+
+  /* ── Layer toggles ── */
+  function bindLayerToggles() {
+    /* Scope to #layerToggles container only — avoids double-binding with bindAirspaceToggles */
+    var container = document.getElementById('layerToggles');
+    if (!container) return;
+    container.querySelectorAll('.layer-toggle').forEach(function(el) {
+      el.addEventListener('click', function() {
+        el.classList.toggle('on');
+        var layer = el.dataset.layer;
+        var vis = el.classList.contains('on') ? 'visible' : 'none';
+        if (layer === 'buildings') {
+          if (map.getLayer('3d-buildings-extrusion')) map.setLayoutProperty('3d-buildings-extrusion', 'visibility', vis);
+        } else if (layer === 'airspace') {
+          D.sites.forEach(function(s){ if (map.getLayer('airspace-fill-'+s.id)) map.setLayoutProperty('airspace-fill-'+s.id,'visibility',vis); });
+        } else if (layer === 'coverage') {
+          D.sites.forEach(function(s){ if (map.getLayer('coverage-fill-'+s.id)) map.setLayoutProperty('coverage-fill-'+s.id,'visibility',vis); });
+        } else if (layer === 'routes') {
+          ['route-line','route-glow'].forEach(function(id){ if (map.getLayer(id)) map.setLayoutProperty(id,'visibility',vis); });
+        }
+      });
+    });
+  }
+
+  /* ── City helpers ── */
+  function cityMatch(site, cityKey) {
+    if (cityKey === 'hong-kong') return site.city === 'hong-kong' || !site.city;
+    if (cityKey === 'shenzhen') return site.city === 'shenzhen';
+    if (cityKey === 'guangzhou-zhuhai') return site.city === 'guangzhou' || site.city === 'zhuhai';
+    return true;
+  }
+
+  function flyToCity(cityKey) {
+    if (!map) return;
+    if (cityKey === 'hong-kong') {
+      map.flyTo({ center:[114.17, 22.315], zoom:12.5, pitch:55, bearing:-15, duration:1300 });
+    } else if (cityKey === 'shenzhen') {
+      map.flyTo({ center:[114.06, 22.545], zoom:11.5, pitch:48, bearing:-10, duration:1400 });
+    } else if (cityKey === 'guangzhou-zhuhai') {
+      map.flyTo({ center:[113.55, 22.30], zoom:9.5, pitch:30, bearing:0, duration:1600 });
+    }
+    updateActiveSiteBadge();
+  }
+
+  function updateActiveSiteBadge() {
+    var badgeEl = document.getElementById('activeSiteBadge');
+    if (!badgeEl) return;
+    var citySites = D.sites.filter(function(s){ return cityMatch(s, selectedCity); });
+    var labels = { 'hong-kong':'Hong Kong', 'shenzhen':'Shenzhen GBA', 'guangzhou-zhuhai':'GZ · Zhuhai' };
+    badgeEl.textContent = (labels[selectedCity] || 'GBA') + ' · ' + citySites.length + ' Sites';
+  }
+
+  function refreshMarkersForCity() {
+    Object.keys(markersMap).forEach(function(sid) {
+      if (markersMap[sid]) { markersMap[sid].remove(); }
+    });
+    markersMap = {};
+    addSiteMarkers();
+  }
+
+  function renderCityTabs() {
+    var host = document.getElementById('mapCityTabs');
+    if (!host) return;
+    var cities = [
+      { key:'hong-kong', label:'🇭🇰 Hong Kong' },
+      { key:'shenzhen',  label:'🏙 Shenzhen' },
+      { key:'guangzhou-zhuhai', label:'🌊 GZ · Zhuhai' }
+    ];
+    host.innerHTML = cities.map(function(c) {
+      return '<button class="city-tab' + (c.key===selectedCity?' active':'') + '" data-city="'+c.key+'">' + c.label + '</button>';
+    }).join('');
+    host.querySelectorAll('[data-city]').forEach(function(b) {
+      b.addEventListener('click', function() {
+        selectedCity = b.dataset.city;
+        var citySites = D.sites.filter(function(s){ return cityMatch(s, selectedCity); });
+        if (citySites.length > 0) selectedSiteId = citySites[0].id;
+        syncUrl();
+        renderCityTabs();
+        flyToCity(selectedCity);
+        refreshMarkersForCity();
+        renderLeftSiteList();
+        renderRightDetail();
+      });
+    });
+  }
+
+  /* ── Rerender ── */
+  function rerender() {
+    renderPlanTabs(); renderPersonaTabs(); renderCityTabs(); renderLeftSiteList(); renderRightDetail(); updateMarkers();
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     ROOFTOP CONFIGURATOR — SELECTION & ASSEMBLY SYSTEM
+     ══════════════════════════════════════════════════════════════ */
+
+  /* ── approxAreaM2 — polygon (shoelace) or bbox rectangle ── */
+  function approxAreaM2(bboxOrPoly) {
+    var poly = bboxOrPoly && bboxOrPoly.polygon;
+    if (poly && poly.length >= 3) {
+      var R = 6371000, n = poly.length, area = 0;
+      for (var i = 0; i < n; i++) {
+        var j = (i + 1) % n;
+        var xi = poly[i][0] * Math.PI / 180 * R * Math.cos(poly[i][1] * Math.PI / 180);
+        var yi = poly[i][1] * Math.PI / 180 * R;
+        var xj = poly[j][0] * Math.PI / 180 * R * Math.cos(poly[j][1] * Math.PI / 180);
+        var yj = poly[j][1] * Math.PI / 180 * R;
+        area += xi * yj - xj * yi;
+      }
+      return Math.round(Math.abs(area / 2));
+    }
+    var R = 6371000;
+    var lat = (bboxOrPoly.north + bboxOrPoly.south) / 2 * Math.PI / 180;
+    var dLat = Math.abs(bboxOrPoly.north - bboxOrPoly.south) * Math.PI / 180;
+    var dLng = Math.abs(bboxOrPoly.east - bboxOrPoly.west) * Math.PI / 180;
+    return Math.round(dLng * R * Math.cos(lat) * dLat * R);
+  }
+
+  /* ── drawSelectionOnMap — handles both polygon and bbox ── */
+  function drawSelectionOnMap(bbox) {
+    if (!bbox || !map || !map.getSource('sel-rect')) return;
+    var ring = bbox.polygon && bbox.polygon.length >= 4
+      ? (function(){ var r = bbox.polygon.slice(); r.push(r[0]); return r; })()
+      : [[bbox.west,bbox.north],[bbox.east,bbox.north],[bbox.east,bbox.south],[bbox.west,bbox.south],[bbox.west,bbox.north]];
+    map.getSource('sel-rect').setData({ type:'Feature', geometry:{ type:'Polygon', coordinates:[ring] } });
+  }
+  /* keep old name as alias for backward compat */
+  function updateSelRectOnMap(bbox) { drawSelectionOnMap(bbox); }
+
+  function clearSelRectOnMap() {
+    if (map && map.getSource('sel-rect'))
+      map.getSource('sel-rect').setData({ type:'Feature', geometry:{ type:'Polygon', coordinates:[[]] } });
+    if (map && map.getSource('sel-points'))
+      map.getSource('sel-points').setData({ type:'FeatureCollection', features:[] });
+  }
+
+  /* ── updateSelPointsOnMap — show glowing dots at each clicked corner ── */
+  function updateSelPointsOnMap(pts) {
+    if (!map || !map.getSource('sel-points')) return;
+    map.getSource('sel-points').setData({
+      type: 'FeatureCollection',
+      features: pts.map(function(p, i) {
+        return { type:'Feature', properties:{ idx: i+1 },
+                 geometry:{ type:'Point', coordinates:[p.lng, p.lat] } };
+      })
+    });
+  }
+
+  /* ── enterSelMode ── */
+  function enterSelMode() {
+    if (selMode !== 'idle') return;
+    selMode = 'drawing'; selPoints = [];
+    document.getElementById('selModeBtn').classList.add('sel-active');
+    document.getElementById('navCfgBtn').classList.add('sel-active');
+    document.getElementById('selInstructions').style.display = 'flex';
+    document.getElementById('selStepText').textContent = 'Point 1 / 4 — click first corner of the vertiport area';
+    var canvas = document.querySelector('.maplibregl-canvas');
+    if (canvas) canvas.style.cursor = 'crosshair';
+    _onMapClickSel = function(e) { onMapClickSel(e); };
+    _onMapMoveSel  = function(e) { onMapMoveSel(e); };
+    map.on('click', _onMapClickSel);
+    map.on('mousemove', _onMapMoveSel);
+  }
+
+  /* ── exitSelMode ── */
+  function exitSelMode() {
+    selMode = 'idle'; selPoints = [];
+    if (_onMapClickSel) { map.off('click', _onMapClickSel); _onMapClickSel = null; }
+    if (_onMapMoveSel)  { map.off('mousemove', _onMapMoveSel); _onMapMoveSel = null; }
+    clearSelRectOnMap();
+    document.getElementById('selModeBtn').classList.remove('sel-active');
+    document.getElementById('navCfgBtn').classList.remove('sel-active');
+    document.getElementById('selInstructions').style.display = 'none';
+    document.getElementById('cfgConfirm').style.display = 'none';
+    var canvas = document.querySelector('.maplibregl-canvas');
+    if (canvas) canvas.style.cursor = '';
+  }
+
+  /* ── onMapClickSel — 4-point polygon selection ── */
+  var SEL_STEP_LABELS = [
+    'Point 1 / 4 — click first corner of the vertiport area',
+    'Point 2 / 4 — click second corner',
+    'Point 3 / 4 — click third corner',
+    'Point 4 / 4 — click last corner to close and confirm'
+  ];
+  function onMapClickSel(e) {
+    if (selMode !== 'drawing') return;
+    selPoints.push({ lng: e.lngLat.lng, lat: e.lngLat.lat });
+    updateSelPointsOnMap(selPoints);
+
+    if (selPoints.length < 4) {
+      /* Show partial polygon preview */
+      var previewRing = selPoints.map(function(p){ return [p.lng, p.lat]; });
+      if (selPoints.length >= 3) previewRing.push(previewRing[0]); /* close triangle early */
+      map.getSource('sel-rect').setData({
+        type:'Feature', geometry:{ type:'Polygon', coordinates:[previewRing.concat([previewRing[0] || previewRing[previewRing.length-1]])] }
+      });
+      document.getElementById('selStepText').textContent = SEL_STEP_LABELS[selPoints.length] || '';
+    } else {
+      /* 4th point — auto-close and build selBbox */
+      map.off('click', _onMapClickSel); _onMapClickSel = null;
+      map.off('mousemove', _onMapMoveSel); _onMapMoveSel = null;
+      var allLng = selPoints.map(function(p){ return p.lng; });
+      var allLat = selPoints.map(function(p){ return p.lat; });
+      var site = getSite(selectedSiteId);
+      selBbox = {
+        west:  Math.min.apply(null, allLng), east:  Math.max.apply(null, allLng),
+        north: Math.max.apply(null, allLat), south: Math.min.apply(null, allLat),
+        polygon: selPoints.map(function(p){ return [p.lng, p.lat]; }),
+        label:    site ? site.shortName + ' Vertiport Area' : 'Custom Vertiport Area',
+        typeHint: site ? site.type : 'Custom Selection'
+      };
+      drawSelectionOnMap(selBbox);
+      selMode = 'confirm';
+      document.getElementById('selInstructions').style.display = 'none';
+      document.getElementById('selModeBtn').classList.remove('sel-active');
+      document.getElementById('navCfgBtn').classList.remove('sel-active');
+      var canvas = document.querySelector('.maplibregl-canvas');
+      if (canvas) canvas.style.cursor = '';
+      showConfirmModal();
+    }
+  }
+
+  /* ── onMapMoveSel — live polygon preview to cursor ── */
+  function onMapMoveSel(e) {
+    if (selMode !== 'drawing' || selPoints.length === 0) return;
+    var preview = selPoints.map(function(p){ return [p.lng, p.lat]; });
+    preview.push([e.lngLat.lng, e.lngLat.lat]);
+    if (preview.length >= 3) preview.push(preview[0]); /* close */
+    map.getSource('sel-rect').setData({
+      type:'Feature', geometry:{ type:'Polygon', coordinates:[preview] }
+    });
+  }
+
+  /* ── showConfirmModal ── */
+  function showConfirmModal() {
+    var area = approxAreaM2(selBbox);
+    var maxEvtol = Math.max(1, Math.min(4, Math.floor(area / 600)));
+    var maxUav   = Math.min(6, Math.floor(area / 150));
+    var hasPreset = Array.isArray(selBbox.presetLayout) && selBbox.presetLayout.length > 0;
+    var site = getSite(selectedSiteId);
+    var eyebrow = hasPreset
+      ? (site ? site.nodeType + ' · Preset Layout Ready' : 'Preset Layout Ready')
+      : 'Custom Area Selected';
+    document.getElementById('cfgConfirmEyebrow').textContent = eyebrow;
+    document.getElementById('cfgConfirmTitle').textContent = selBbox.label || 'Vertiport Workspace';
+    document.getElementById('cfgConfirmDesc').textContent = hasPreset
+      ? 'Preset modules for this site type are pre-placed in the configurator — all fully draggable and adjustable.'
+      : 'Confirm the selected area to enter Vertiport Configurator. The map shifts to bird\'s-eye view for module assembly.';
+    document.getElementById('cfgConfirmMeta').innerHTML =
+      '<div class="confirm-cell"><span>Approx. Area</span><strong>' + area.toLocaleString() + ' m²</strong></div>' +
+      '<div class="confirm-cell"><span>Site Type</span><strong>' + (selBbox.typeHint || 'Custom') + '</strong></div>' +
+      '<div class="confirm-cell"><span>Max eVTOL FATOs</span><strong>' + maxEvtol + ' pads</strong></div>' +
+      '<div class="confirm-cell"><span>Max UAV Pads</span><strong>' + maxUav + ' positions</strong></div>';
+    document.getElementById('cfgConfirm').style.display = 'block';
+  }
+
+  /* ── enterCfgMode ── */
+  function enterCfgMode(presetLayout) {
+    selMode = 'configuring'; placedModules = [];
+    /* Pre-place preset modules if provided. Duplicates are allowed
+       (e.g. two FATO pads) — each entry gets a unique id via timestamp offset. */
+    if (Array.isArray(presetLayout) && presetLayout.length) {
+      presetLayout.forEach(function(item, i) {
+        var mod = CFG_MODULES.find(function(m){ return m.id === item.id; });
+        if (!mod) return;
+        /* Validate grid bounds before placing */
+        var gx = Math.max(0, Math.min(GRID_COLS - mod.gw, item.gx || 0));
+        var gy = Math.max(0, Math.min(GRID_ROWS - mod.gh, item.gy || 0));
+        placedModules.push({ id: item.id, gx: gx, gy: gy });
+      });
+    }
+    document.getElementById('cfgConfirm').style.display = 'none';
+    document.querySelector('.map-left').style.display = 'none';
+    document.querySelector('.map-right').style.display = 'none';
+    document.querySelector('.map-bottom-bar').style.display = 'none';
+    document.getElementById('cfgToolbar').style.display = 'flex';
+    document.getElementById('cfgPalette').style.display = 'flex';
+    var overlay = document.getElementById('cfgOverlay');
+    overlay.style.display = 'block';
+    overlay.classList.add('active');
+    /* Fly to bird's-eye over the polygon centroid (or bbox centre) */
+    var cx, cy;
+    if (selBbox.polygon && selBbox.polygon.length >= 3) {
+      var _n = selBbox.polygon.length;
+      cx = selBbox.polygon.reduce(function(s,p){ return s + p[0]; }, 0) / _n;
+      cy = selBbox.polygon.reduce(function(s,p){ return s + p[1]; }, 0) / _n;
+    } else {
+      cx = (selBbox.west + selBbox.east) / 2;
+      cy = (selBbox.north + selBbox.south) / 2;
+    }
+    var areaM2 = approxAreaM2(selBbox);
+    var sideM = Math.sqrt(areaM2);
+    /* zoom so bbox fills ~70% of a 700px window at 0.3m/px base */
+    var zoom = Math.min(20.5, Math.max(17.5, 19 + Math.log2(210 / Math.max(sideM, 8))));
+    map.flyTo({ center:[cx, cy], pitch:0, bearing:0, zoom:zoom, duration:1200 });
+    renderPalette();
+    updateCapex();
+    overlayW = 0; overlayH = 0; overlayPolyPts = null;
+    map.on('render', onMapRenderCfg);
+  }
+
+  /* ── exitCfgMode ── */
+  function exitCfgMode() {
+    selMode = 'idle'; placedModules = []; selBbox = null; cfgBusy = false; currentDrag = null;
+    clearSelRectOnMap();
+    document.querySelector('.map-left').style.display = 'flex';
+    document.querySelector('.map-right').style.display = 'flex';
+    document.querySelector('.map-bottom-bar').style.display = 'flex';
+    document.getElementById('cfgToolbar').style.display = 'none';
+    document.getElementById('cfgPalette').style.display = 'none';
+    var overlay = document.getElementById('cfgOverlay');
+    overlay.style.display = 'none'; overlay.classList.remove('active'); overlay.innerHTML = '';
+    document.getElementById('selModeBtn').classList.remove('sel-active');
+    document.getElementById('navCfgBtn').classList.remove('sel-active');
+    map.off('render', onMapRenderCfg);
+    map.flyTo({ center:[114.17, 22.315], zoom:12.5, pitch:55, bearing:-15, duration:1200 });
+  }
+
+  /* ── onMapRenderCfg (reproject overlay on every map render) ── */
+  /* OVERLAY_SCALE: render the floor-plan SVG at this fraction of the full
+     projected polygon size, centred on the selected area.
+     0.68 ≈ 68% — clearly smaller than the footprint but still easy to work with. */
+  var OVERLAY_SCALE = 0.68;
+  /* 交互进行中(点删除 / 拖模块)冻结楼面 SVG 重绘,避免节点被替换 */
+  var cfgBusy = false;
+
+  function onMapRenderCfg() {
+    if (selMode !== 'configuring' || !selBbox) return;
+    /* Project all 4 polygon corners (or bbox corners) into screen space */
+    var poly = selBbox.polygon;
+    var screenPts;
+    if (poly && poly.length >= 4) {
+      screenPts = poly.map(function(p) { return map.project(p); });
+    } else {
+      screenPts = [
+        map.project([selBbox.west,  selBbox.north]),
+        map.project([selBbox.east,  selBbox.north]),
+        map.project([selBbox.east,  selBbox.south]),
+        map.project([selBbox.west,  selBbox.south])
+      ];
+    }
+    var xs = screenPts.map(function(p){ return p.x; });
+    var ys = screenPts.map(function(p){ return p.y; });
+    var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
+    var minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
+    var fullW = Math.max(0, maxX - minX);
+    var fullH = Math.max(0, maxY - minY);
+
+    /* Scale down and centre within the projected bounding box */
+    var W = Math.round(fullW * OVERLAY_SCALE);
+    var H = Math.round(fullH * OVERLAY_SCALE);
+    var oLeft = Math.round(minX + (fullW - W) / 2);
+    var oTop  = Math.round(minY + (fullH - H) / 2);
+
+    var overlay = document.getElementById('cfgOverlay');
+    overlay.style.left   = oLeft + 'px';
+    overlay.style.top    = oTop  + 'px';
+    overlay.style.width  = W + 'px';
+    overlay.style.height = H + 'px';
+
+    /* Polygon corners normalised into the scaled overlay coordinate space */
+    var normPts = screenPts.map(function(p) {
+      return {
+        x: +((p.x - minX) * OVERLAY_SCALE).toFixed(1),
+        y: +((p.y - minY) * OVERLAY_SCALE).toFixed(1)
+      };
+    });
+    if (!cfgBusy && (Math.abs(W - overlayW) > 1 || Math.abs(H - overlayH) > 1) && W > 30 && H > 30) {
+      overlayW = W; overlayH = H;
+      overlayPolyPts = normPts;
+      renderFloorSvg(W, H);
+    }
+  }
+
+  /* ── renderFloorSvg ── */
+  function renderFloorSvg(W, H) {
+    var cw = W / GRID_COLS;
+    var ch = H / GRID_ROWS;
+    var s = '';
+
+    /* Build clipPath from polygon corners (or fallback full-rect) */
+    var pts = overlayPolyPts;
+    var clipPoints;
+    if (pts && pts.length >= 4) {
+      clipPoints = pts.map(function(p){ return p.x + ',' + p.y; }).join(' ');
+    } else {
+      clipPoints = '0,0 ' + W + ',0 ' + W + ',' + H + ' 0,' + H;
+    }
+    s += '<defs>';
+    s += '<clipPath id="vpClip"><polygon points="' + clipPoints + '"/></clipPath>';
+    s += '</defs>';
+
+    /* Clipped rooftop surface group */
+    s += '<g clip-path="url(#vpClip)">';
+    s += '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="rgba(10,20,36,0.82)"/>';
+
+    /* Grid */
+    for (var c = 0; c <= GRID_COLS; c++) {
+      var gx = (c * cw).toFixed(1);
+      s += '<line x1="' + gx + '" y1="0" x2="' + gx + '" y2="' + H + '" stroke="rgba(255,255,255,0.07)" stroke-width="0.5"/>';
+    }
+    for (var r = 0; r <= GRID_ROWS; r++) {
+      var gy = (r * ch).toFixed(1);
+      s += '<line x1="0" y1="' + gy + '" x2="' + W + '" y2="' + gy + '" stroke="rgba(255,255,255,0.07)" stroke-width="0.5"/>';
+    }
+
+    /* Drop zone highlight (shown during drag) */
+    s += '<rect id="dropZoneHL" x="0" y="0" width="0" height="0" fill="rgba(111,211,180,0.15)" stroke="rgba(111,211,180,0.6)" stroke-width="1.5" rx="3" opacity="0" pointer-events="none"/>';
+
+    /* Placed modules */
+    placedModules.forEach(function(pm, idx) {
+      var mod = CFG_MODULES.find(function(m){ return m.id === pm.id; });
+      if (!mod) return;
+      s += renderPlacedMod(mod, pm.gx * cw, pm.gy * ch, mod.gw * cw, mod.gh * ch, idx);
+    });
+
+    s += '</g>'; /* end clip group */
+
+    /* Polygon boundary outline (drawn on top, outside clip) */
+    s += '<polygon points="' + clipPoints + '" fill="none" stroke="#E4746C" stroke-width="2.5" stroke-dasharray="10,5" pointer-events="none"/>';
+
+    /* N marker + label (always visible, outside clip) */
+    s += '<text x="8" y="16" font-size="11" fill="rgba(239,80,80,0.7)" font-family="sans-serif" font-weight="700" pointer-events="none">N↑</text>';
+    var lbl = selBbox ? (selBbox.label || 'Vertiport Workspace') : 'Vertiport Workspace';
+    s += '<text x="' + (W/2) + '" y="' + (H-6) + '" text-anchor="middle" font-size="10" fill="rgba(239,90,90,0.6)" font-family="sans-serif" font-weight="700" pointer-events="none">' + lbl + ' — drag modules to assemble</text>';
+
+    var overlay = document.getElementById('cfgOverlay');
+    overlay.innerHTML = '<svg id="floorSvg" width="' + W + '" height="' + H + '" xmlns="http://www.w3.org/2000/svg">' + s + '</svg>';
+    bindSvgEvents(cw, ch);
+  }
+
+  /* ── renderPlacedMod ── */
+  function renderPlacedMod(mod, px, py, pw, ph, idx) {
+    var pad = 3;
+    var shape = '';
+    if (mod.shape === 'circle') {
+      var cx = px + pw/2, cy = py + ph/2;
+      var r  = Math.min(pw, ph)/2 - pad;
+      var ri = r * 0.6;
+      var fs = Math.max(9, r * 0.55);
+      /* FATO outer + inner TLOF circle + H marker */
+      shape += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+mod.color+'" stroke="'+mod.border+'" stroke-width="2" opacity="0.92"/>';
+      shape += '<circle cx="'+cx+'" cy="'+cy+'" r="'+ri+'" fill="none" stroke="'+mod.border+'" stroke-width="1" stroke-dasharray="4,2" opacity="0.55"/>';
+      shape += '<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="middle" font-size="'+fs+'" fill="'+mod.textColor+'" font-weight="900" font-family="sans-serif">' + (mod.id === 'wind_mast' ? 'W' : mod.shortLabel) + '</text>';
+      if (mod.id === 'evtol_fato') {
+        /* Approach sector arc at top */
+        var a1x = (cx + r * Math.cos(-Math.PI/2 - 0.42)).toFixed(1);
+        var a1y = (cy + r * Math.sin(-Math.PI/2 - 0.42)).toFixed(1);
+        var a2x = (cx + r * Math.cos(-Math.PI/2 + 0.42)).toFixed(1);
+        var a2y = (cy + r * Math.sin(-Math.PI/2 + 0.42)).toFixed(1);
+        shape += '<path d="M '+a1x+' '+a1y+' A '+r+' '+r+' 0 0 1 '+a2x+' '+a2y+'" fill="none" stroke="'+mod.textColor+'" stroke-width="2.5" opacity="0.45"/>';
+      }
+    } else if (mod.shape === 'hex') {
+      var hcx = px + pw/2, hcy = py + ph/2;
+      var hr = Math.min(pw, ph)/2 - pad;
+      var pts = Array.from({length:6}, function(_, i) {
+        var a = Math.PI/180 * (60*i - 30);
+        return (hcx + hr*Math.cos(a)).toFixed(1) + ',' + (hcy + hr*Math.sin(a)).toFixed(1);
+      }).join(' ');
+      var hfs = Math.max(7, hr * 0.4);
+      shape += '<polygon points="'+pts+'" fill="'+mod.color+'" stroke="'+mod.border+'" stroke-width="2" opacity="0.92"/>';
+      shape += '<text x="'+hcx+'" y="'+hcy+'" text-anchor="middle" dominant-baseline="middle" font-size="'+hfs+'" fill="'+mod.textColor+'" font-weight="700" font-family="sans-serif" pointer-events="none">'+mod.shortLabel+'</text>';
+    } else {
+      var rfs = Math.max(8, Math.min(pw, ph) * 0.13);
+      shape += '<rect x="'+(px+pad)+'" y="'+(py+pad)+'" width="'+(pw-pad*2)+'" height="'+(ph-pad*2)+'" fill="'+mod.color+'" stroke="'+mod.border+'" stroke-width="2" rx="4" opacity="0.92"/>';
+      shape += '<text x="'+(px+pw/2)+'" y="'+(py+ph/2)+'" text-anchor="middle" dominant-baseline="middle" font-size="'+rfs+'" fill="'+mod.textColor+'" font-weight="700" font-family="sans-serif" pointer-events="none">'+mod.label+'</text>';
+      if (mod.id === 'ev_charger' || mod.id === 'uav_charger') {
+        shape += '<text x="'+(px+pw-8)+'" y="'+(py+8)+'" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="'+mod.textColor+'" font-family="sans-serif">⚡</text>';
+      }
+    }
+    /* Delete button (top-right) */
+    var dx = (px + pw - 9).toFixed(1), dy = (py + 9).toFixed(1);
+    var del = '<circle class="mod-del-btn" data-idx="'+idx+'" cx="'+dx+'" cy="'+dy+'" r="9" fill="rgba(190,30,30,0.88)" stroke="rgba(228,116,108,0.6)" stroke-width="1" style="cursor:pointer;"/>' +
+              '<text x="'+dx+'" y="'+dy+'" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#fff" style="pointer-events:none;user-select:none;">✕</text>';
+    return '<g class="placed-mod" data-idx="'+idx+'" data-id="'+mod.id+'">' + shape + del + '</g>';
+  }
+
+  /* ── bindSvgEvents ──────────────────────────────────────────────
+     说明:楼面 SVG 会随地图重绘被整体替换(overlay.innerHTML = ...),
+     如果把监听器绑在每个 <g> 节点上,节点一被替换监听器就失效
+     —— 这正是「✕ 点不掉、已放置模块拖不动」的原因。
+     这里改成把监听器一次性绑在 #cfgOverlay 上做事件委托,
+     无论 SVG 重绘多少次都不会掉。 */
+  var cfgDelegated = false;
+  var cellW = 0, cellH = 0;
+
+  function bindSvgEvents(cw, ch) {
+    cellW = cw; cellH = ch;
+    if (cfgDelegated) return;
+    var overlay = document.getElementById('cfgOverlay');
+    if (!overlay) return;
+    cfgDelegated = true;
+
+    function idxOf(node, sel) {
+      var t = node && node.closest ? node.closest(sel) : null;
+      if (!t) return -1;
+      var i = parseInt(t.getAttribute('data-idx'), 10);
+      return isNaN(i) ? -1 : i;
+    }
+
+    function removeAt(i) {
+      if (i < 0 || i >= placedModules.length) return;
+      placedModules.splice(i, 1);
+      renderFloorSvg(overlayW, overlayH);
+      updateCapex();
+    }
+
+    /* 删除:用 pointerdown 而不是 click。
+       click 需要 down/up 落在同一个节点上,SVG 一重绘就配不上了。 */
+    overlay.addEventListener('pointerdown', function (e) {
+      /* 只响应左键;右键留给 contextmenu 删除 */
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      var di = idxOf(e.target, '.mod-del-btn');
+      if (di >= 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        removeAt(di);
+        return;
+      }
+      /* 移动已放置的模块 */
+      var pi = idxOf(e.target, '.placed-mod');
+      if (pi < 0) return;
+      var pm = placedModules[pi];
+      if (!pm) return;
+      var mod = CFG_MODULES.find(function (m) { return m.id === pm.id; });
+      if (!mod) return;
+      e.preventDefault();
+      e.stopPropagation();
+      cfgBusy = true;
+      placedModules.splice(pi, 1);
+      renderFloorSvg(overlayW, overlayH);
+      startDrag(mod.id, e, true, pi, pm.gx, pm.gy);
+    });
+
+    /* 右键同样可删除 */
+    overlay.addEventListener('contextmenu', function (e) {
+      var pi = idxOf(e.target, '.placed-mod');
+      if (pi < 0) return;
+      e.preventDefault();
+      removeAt(pi);
+    });
+
+    /* 拖动时的落位高亮 */
+    overlay.addEventListener('pointermove', function (e) {
+      if (!currentDrag) return;
+      var rect = overlay.getBoundingClientRect();
+      var x = e.clientX - rect.left;
+      var y = e.clientY - rect.top;
+      var gx = Math.max(0, Math.min(GRID_COLS - currentDrag.mod.gw, Math.floor(x / cellW)));
+      var gy = Math.max(0, Math.min(GRID_ROWS - currentDrag.mod.gh, Math.floor(y / cellH)));
+      var ok = canPlace(currentDrag.mod, gx, gy);
+      var hl = document.getElementById('dropZoneHL');
+      if (!hl) return;
+      hl.setAttribute('x', (gx * cellW).toFixed(1));
+      hl.setAttribute('y', (gy * cellH).toFixed(1));
+      hl.setAttribute('width',  (currentDrag.mod.gw * cellW).toFixed(1));
+      hl.setAttribute('height', (currentDrag.mod.gh * cellH).toFixed(1));
+      hl.setAttribute('opacity', '1');
+      hl.setAttribute('fill',   ok ? 'rgba(111,211,180,0.18)' : 'rgba(228,116,108,0.18)');
+      hl.setAttribute('stroke', ok ? 'rgba(111,211,180,0.7)'  : 'rgba(228,116,108,0.7)');
+    });
+
+    overlay.addEventListener('pointerleave', function () {
+      var hl = document.getElementById('dropZoneHL');
+      if (hl) hl.setAttribute('opacity', '0');
+    });
+  }
+
+  /* ── canPlace ── */
+  function canPlace(mod, gx, gy) {
+    if (gx < 0 || gy < 0 || gx + mod.gw > GRID_COLS || gy + mod.gh > GRID_ROWS) return false;
+    for (var i = 0; i < placedModules.length; i++) {
+      var pm = placedModules[i];
+      var pm_mod = CFG_MODULES.find(function(m){ return m.id === pm.id; });
+      if (!pm_mod) continue;
+      if (gx < pm.gx + pm_mod.gw && gx + mod.gw > pm.gx && gy < pm.gy + pm_mod.gh && gy + mod.gh > pm.gy) return false;
+    }
+    return true;
+  }
+
+  /* ── renderPalette ── */
+  function renderPalette() {
+    var host = document.getElementById('paletteModList');
+    host.innerHTML = CFG_MODULES.map(function(mod) {
+      return '<div class="palette-mod" data-modid="'+mod.id+'" style="border-color:'+mod.border+'44;">' +
+        '<div class="palette-mod-icon" style="background:'+mod.color+';border:1px solid '+mod.border+';">' +
+        '<span style="font-size:15px;color:'+mod.textColor+'">'+mod.icon+'</span></div>' +
+        '<div class="palette-mod-info"><div class="palette-mod-name">'+mod.label+'</div>' +
+        '<div class="palette-mod-price">HK$ '+mod.price.toFixed(2)+'M</div>' +
+        '<div class="palette-mod-dims">'+mod.gw+'×'+mod.gh+' grid · '+mod.desc.split('.')[0]+'</div>' +
+        '</div></div>';
+    }).join('');
+    host.querySelectorAll('.palette-mod').forEach(function(el) {
+      el.addEventListener('pointerdown', function(e) {
+        startDrag(el.getAttribute('data-modid'), e, false);
+      });
+    });
+  }
+
+  /* ── updateCapex ── */
+  function updateCapex() {
+    var total = placedModules.reduce(function(sum, pm) {
+      var mod = CFG_MODULES.find(function(m){ return m.id === pm.id; });
+      return sum + (mod ? mod.price : 0);
+    }, 0);
+    var txt = 'HK$ ' + total.toFixed(2) + 'M';
+    var el1 = document.getElementById('cfgCapexLive');
+    var el2 = document.getElementById('paletteTotalCapex');
+    if (el1) el1.textContent = txt;
+    if (el2) el2.textContent = txt;
+  }
+
+  /* ── startDrag ── */
+  function startDrag(modId, e, fromPlaced, placedIdx, origGx, origGy) {
+    e.preventDefault();
+    cfgBusy = true;
+    var mod = CFG_MODULES.find(function(m){ return m.id === modId; });
+    if (!mod) return;
+    currentDrag = { id:modId, mod:mod, fromPlaced:!!fromPlaced, placedIdx:placedIdx, origGx:origGx, origGy:origGy };
+    var gs = Math.min(90, Math.max(44, overlayW > 0 ? (overlayW / GRID_COLS * mod.gw * 0.85) : 56));
+    var ghost = document.getElementById('dragGhost');
+    ghost.style.cssText = 'position:fixed;z-index:300;pointer-events:none;display:block;border-radius:' + (mod.shape==='circle'?'50%':'10px') + ';' +
+      'width:'+gs+'px;height:'+gs+'px;background:'+mod.color+';border:2px solid '+mod.border+';' +
+      'box-shadow:0 10px 30px rgba(0,0,0,0.65);opacity:0.88;' +
+      'left:'+(e.clientX - gs/2)+'px;top:'+(e.clientY - gs/2)+'px;' +
+      'display:grid;place-items:center;';
+    ghost.innerHTML = '<span style="font-size:'+Math.round(gs*0.35)+'px;color:'+mod.textColor+';font-weight:900;">'+mod.icon+'</span>';
+    document.addEventListener('pointermove', onDragMove);
+    document.addEventListener('pointerup',   onDragEnd);
+    document.addEventListener('pointercancel', onDragEnd);
+  }
+
+  /* ── onDragMove ── */
+  function onDragMove(e) {
+    if (!currentDrag) return;
+    var ghost = document.getElementById('dragGhost');
+    var gs = parseInt(ghost.style.width);
+    ghost.style.left = (e.clientX - gs/2) + 'px';
+    ghost.style.top  = (e.clientY - gs/2) + 'px';
+  }
+
+  /* ── onDragEnd ── */
+  function onDragEnd(e) {
+    document.removeEventListener('pointermove', onDragMove);
+    document.removeEventListener('pointerup',   onDragEnd);
+    document.removeEventListener('pointercancel', onDragEnd);
+    if (!currentDrag) return;
+    document.getElementById('dragGhost').style.display = 'none';
+    var overlay = document.getElementById('cfgOverlay');
+    var rect = overlay.getBoundingClientRect();
+    var x = e.clientX - rect.left;
+    var y = e.clientY - rect.top;
+    if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+      var cw = overlayW / GRID_COLS;
+      var ch = overlayH / GRID_ROWS;
+      var gx = Math.max(0, Math.min(GRID_COLS - currentDrag.mod.gw, Math.floor(x / cw)));
+      var gy = Math.max(0, Math.min(GRID_ROWS - currentDrag.mod.gh, Math.floor(y / ch)));
+      if (canPlace(currentDrag.mod, gx, gy)) {
+        placedModules.push({ id:currentDrag.id, gx:gx, gy:gy });
+      } else if (currentDrag.fromPlaced) {
+        /* Return to original position */
+        placedModules.push({ id:currentDrag.id, gx:currentDrag.origGx, gy:currentDrag.origGy });
+      }
+    } else if (currentDrag.fromPlaced && currentDrag.origGx !== undefined) {
+      /* Dropped outside overlay: restore */
+      placedModules.push({ id:currentDrag.id, gx:currentDrag.origGx, gy:currentDrag.origGy });
+    }
+    currentDrag = null;
+    cfgBusy = false;
+    renderFloorSvg(overlayW, overlayH);
+    updateCapex();
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     DIGITAL TWIN AIRSPACE SYSTEM
+     Reference: 维港数字孪生空中走廊.html
+     3D corridor fill-extrusions float at correct altitude (metres)
+     ══════════════════════════════════════════════════════════════ */
+
+  /* ── Map log ── */
+  function mapLog(msg, cls) {
+    var el = document.getElementById('mapLog');
+    if (!el) return;
+    var t = new Date().toLocaleTimeString('en-HK');
+    el.innerHTML += '<div class="' + (cls||'') + '">[' + t + '] ' + msg + '</div>';
+    el.scrollTop = el.scrollHeight;
+  }
+
+  /* ── Satellite toggle ── */
+  /* ── Site preset bbox layers (visible when satellite is on) ── */
+  /* Each site bbox becomes a coloured polygon on the map.
+     In satellite mode: highlighted fill + dashed line.
+     Clicking a bbox triggers the confirm modal for that site. */
+  var PRESET_BBOX_COLORS = {
+    /* Hong Kong */
+    'hkcec-wanchai':           '#f59e0b',   /* amber  — R-M rooftop */
+    'science-park-pak-shek-kok':'#22c55e',  /* green  — O-M open surface */
+    'cyberport-east-lamma':    '#38bdf8',   /* sky    — F-S2 marine */
+    'china-merchants-wharf':   '#a78bfa',   /* violet — O-S wharf */
+    'cheung-chau-stjohn':      '#fb7185',   /* rose   — F-S1 island */
+    /* Shenzhen */
+    'qianhai-hub':             '#34d399',   /* emerald — FTZ hub */
+    'baoan-dachawan':          '#E4746C',   /* red     — approved */
+    'shekou-cruise':           '#E4746C',   /* red     — approved */
+    'guangming-science':       '#E4746C',   /* red     — approved */
+    'futian-cbd':              '#facc15',   /* yellow  — CBD */
+    'longhua-heliport':        '#E4746C',   /* red     — approved */
+    'dapeng-bagua':            '#E4746C',   /* red     — approved */
+    'luohu-border':            '#7FA8E8',   /* blue    — border */
+    'yantian-port':            '#818cf8',   /* indigo  — port */
+    'pingshan-ev':             '#6FD3B4',   /* lime    — industrial */
+    /* Guangzhou */
+    'nansha-mingzhubay':       '#67e8f9',   /* cyan    — smart city */
+    'huangpu-knowledge':       '#E4746C',   /* red     — approved */
+    /* Zhuhai */
+    'hengqin-macao':           '#f472b6',   /* pink    — cross-border */
+    'jinwan-aviation':         '#a3e635',   /* lime    — aviation */
+    'wanshan-islands':         '#E4746C'    /* red     — approved */
+  };
+
+  function bboxToPolygon(b) {
+    /* Use the precise 4-point polygon if available; fall back to bbox rectangle */
+    if (b.polygon && b.polygon.length >= 4) {
+      var ring = b.polygon.slice(); ring.push(ring[0]); return ring;
+    }
+    return [[b.west,b.north],[b.east,b.north],[b.east,b.south],[b.west,b.south],[b.west,b.north]];
+  }
+
+  function addSitePresetBboxLayers() {
+    var features = Object.keys(SITE_BBOXES).map(function(sid) {
+      var b = SITE_BBOXES[sid];
+      var site = getSite(sid) || {};
+      return {
+        type: 'Feature',
+        properties: { siteId: sid, color: PRESET_BBOX_COLORS[sid] || '#6FD3B4', label: b.label || sid,
+                      nodeType: (site.nodeType || '?'), shortName: (site.shortName || sid) },
+        geometry: { type: 'Polygon', coordinates: [bboxToPolygon(b)] }
+      };
+    });
+    if (!map.getSource('site-preset-bboxes')) {
+      map.addSource('site-preset-bboxes', { type:'geojson', data:{ type:'FeatureCollection', features:features } });
+    }
+    if (!map.getLayer('site-preset-fill')) {
+      map.addLayer({ id:'site-preset-fill', type:'fill', source:'site-preset-bboxes',
+        paint:{ 'fill-color':['get','color'], 'fill-opacity':0.13 },
+        layout:{ visibility:'none' } });
+    }
+    if (!map.getLayer('site-preset-line')) {
+      map.addLayer({ id:'site-preset-line', type:'line', source:'site-preset-bboxes',
+        paint:{ 'line-color':['get','color'], 'line-width':2.5, 'line-dasharray':[5,3] },
+        layout:{ visibility:'none' } });
+    }
+    /* Click on preset bbox → select site + show confirm modal */
+    map.on('click', 'site-preset-fill', function(e) {
+      if (selMode !== 'idle') return;
+      var sid = e.features[0].properties.siteId;
+      if (!sid) return;
+      var bbox = SITE_BBOXES[sid];
+      if (!bbox) return;
+      selectedSiteId = sid;
+      selBbox = bbox;
+      updateSelRectOnMap(selBbox);
+      selMode = 'confirm';
+      renderLeftSiteList();
+      renderRightDetail();
+      showConfirmModal();
+    });
+    map.on('mouseenter', 'site-preset-fill', function() { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', 'site-preset-fill', function() { map.getCanvas().style.cursor = ''; });
+  }
+
+  function setSitePresetBboxVisibility(vis) {
+    ['site-preset-fill','site-preset-line'].forEach(function(id){
+      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis ? 'visible' : 'none');
+    });
+  }
+
+  var satOn = false;
+  document.getElementById('btnSatellite').addEventListener('click', function() {
+    satOn = !satOn;
+    this.classList.toggle('active', satOn);
+    if (satOn) {
+      if (!map.getSource('satellite-src')) {
+        map.addSource('satellite-src', {
+          type: 'raster',
+          tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+          tileSize: 256, maxzoom: 19
+        });
+        /* Insert below vector layers but above extrusions */
+        var firstSymbol = null;
+        map.getStyle().layers.forEach(function(l){ if (!firstSymbol && l.type === 'symbol') firstSymbol = l.id; });
+        map.addLayer({ id:'satellite-layer', type:'raster', source:'satellite-src', paint:{ 'raster-opacity': 0.88 } },
+                     firstSymbol || undefined);
+      } else {
+        map.setLayoutProperty('satellite-layer', 'visibility', 'visible');
+      }
+      setSitePresetBboxVisibility(true);
+      mapLog('Satellite ON — site vertiport footprints shown', 'ok');
+    } else {
+      if (map.getLayer('satellite-layer')) map.setLayoutProperty('satellite-layer', 'visibility', 'none');
+      setSitePresetBboxVisibility(false);
+      mapLog('Satellite imagery OFF', 'inf');
+    }
+  });
+
+  /* ── 3D Corridor GeoJSON ── */
+  /* Three altitude layers across Victoria Harbour, each a rectangle band.
+     fill-extrusion-base / height = actual altitude in metres.
+     At pitch 55° the stacked bands are clearly visible floating in air. */
+  var CORRIDOR_GEOJSON = {
+    type: 'FeatureCollection',
+    features: [
+      /* Layer 1: 50–80 m  — Inspection (UAV) — green */
+      { type:'Feature', properties:{ alt:'50–80m', label:'Inspection (UAV)', color:'#2ecc71', base:50, height:80 },
+        geometry:{ type:'Polygon', coordinates:[[[114.152,22.2840],[114.196,22.2840],[114.196,22.2868],[114.152,22.2868],[114.152,22.2840]]] } },
+      /* Layer 2: 80–120 m — Logistics (eVTOL) — blue */
+      { type:'Feature', properties:{ alt:'80–120m', label:'Logistics (eVTOL)', color:'#3498db', base:80, height:120 },
+        geometry:{ type:'Polygon', coordinates:[[[114.152,22.2868],[114.196,22.2868],[114.196,22.2912],[114.152,22.2912],[114.152,22.2868]]] } },
+      /* Layer 3: 120–150 m — Express — purple */
+      { type:'Feature', properties:{ alt:'120–150m', label:'Express (high-speed)', color:'#9b59b6', base:120, height:150 },
+        geometry:{ type:'Polygon', coordinates:[[[114.152,22.2912],[114.196,22.2912],[114.196,22.2940],[114.152,22.2940],[114.152,22.2912]]] } }
+    ]
+  };
+
+  /* ── NFZ GeoJSON (circles approximated as polygon rings) ── */
+  var NFZ_SITES = [
+    { name:'ICC Global Trade Sq',   pos:[114.1605,22.3033], r:220, desc:'484 m — tallest in HK' },
+    { name:'IFC International',     pos:[114.1580,22.2855], r:180, desc:'415 m — Central landmark' },
+    { name:'HKCEC',                 pos:[114.1738,22.2830], r:150, desc:'Low-altitude obstacle' },
+    { name:'Govt Flying Service',   pos:[114.1745,22.2940], r:260, desc:'GFS helicopter corridor' },
+    { name:'Star Ferry Zone',       pos:[114.1680,22.2885], r:130, desc:'Dynamic ferry movement zone' },
+    { name:'Airport Express Vent',  pos:[114.1650,22.2830], r:100, desc:'Airport Express ventilation' },
+  ];
+
+  function makeCirclePolygon(cx, cy, radiusM, steps) {
+    steps = steps || 48;
+    var R = 6371000;
+    var coords = [];
+    for (var i = 0; i <= steps; i++) {
+      var a = (i / steps) * 2 * Math.PI;
+      var dlat = (radiusM / R) * (180 / Math.PI);
+      var dlng = dlat / Math.cos(cy * Math.PI / 180);
+      coords.push([cx + dlng * Math.sin(a), cy + dlat * Math.cos(a)]);
+    }
+    return [coords];
+  }
+
+  var NFZ_GEOJSON = {
+    type: 'FeatureCollection',
+    features: NFZ_SITES.map(function(z) {
+      return { type:'Feature', properties:{ name:z.name, desc:z.desc, r:z.r },
+               geometry:{ type:'Polygon', coordinates: makeCirclePolygon(z.pos[0], z.pos[1], z.r) } };
+    })
+  };
+
+  /* ── Waypoint grid ── */
+  var WAYPOINT_GEOJSON = (function() {
+    var pts = [], lines = [];
+    var grid = [];
+    for (var j = 0; j < 4; j++) {
+      for (var i = 0; i < 8; i++) {
+        var p = [114.153 + i * 0.006, 22.283 + j * 0.004];
+        grid.push(p);
+        pts.push({ type:'Feature', properties:{id:'WP-'+String(j*8+i).padStart(3,'0')},
+                   geometry:{type:'Point', coordinates:p} });
+      }
+    }
+    /* horizontal edges */
+    for (var k = 0; k < grid.length; k++) {
+      if ((k+1) % 8 !== 0) lines.push({ type:'Feature', geometry:{type:'LineString', coordinates:[grid[k],grid[k+1]]} });
+      if (k + 8 < grid.length) lines.push({ type:'Feature', geometry:{type:'LineString', coordinates:[grid[k],grid[k+8]]} });
+    }
+    return {
+      points: { type:'FeatureCollection', features:pts },
+      lines:  { type:'FeatureCollection', features:lines }
+    };
+  })();
+
+  /* ── Initialise airspace map layers (called after style.load) ── */
+  function addAirspaceLayers() {
+    /* 3D Corridors */
+    map.addSource('corridors-3d', { type:'geojson', data: CORRIDOR_GEOJSON });
+    map.addLayer({
+      id:'corridor-glow', type:'fill-extrusion', source:'corridors-3d',
+      paint:{ 'fill-extrusion-color':['get','color'], 'fill-extrusion-height':['get','height'],
+              'fill-extrusion-base':['get','base'], 'fill-extrusion-opacity':0.12 },
+      layout:{ visibility:'none' }
+    });
+    map.addLayer({
+      id:'corridor-main', type:'fill-extrusion', source:'corridors-3d',
+      paint:{ 'fill-extrusion-color':['get','color'], 'fill-extrusion-height':['get','height'],
+              'fill-extrusion-base':['get','base'], 'fill-extrusion-opacity':0.38 },
+      layout:{ visibility:'none' }
+    });
+
+    /* NFZ */
+    map.addSource('nfz-src', { type:'geojson', data: NFZ_GEOJSON });
+    map.addLayer({
+      id:'nfz-fill', type:'fill', source:'nfz-src',
+      paint:{ 'fill-color':'#E4746C', 'fill-opacity':0.10 },
+      layout:{ visibility:'none' }
+    });
+    map.addLayer({
+      id:'nfz-line', type:'line', source:'nfz-src',
+      paint:{ 'line-color':'#E4746C', 'line-width':2, 'line-opacity':0.7, 'line-dasharray':[6,3] },
+      layout:{ visibility:'none' }
+    });
+
+    /* Waypoint lines */
+    map.addSource('wp-lines', { type:'geojson', data: WAYPOINT_GEOJSON.lines });
+    map.addLayer({
+      id:'wp-line-layer', type:'line', source:'wp-lines',
+      paint:{ 'line-color':'#7FA8E8', 'line-width':1, 'line-opacity':0.22 },
+      layout:{ visibility:'none' }
+    });
+
+    /* Waypoint points */
+    map.addSource('wp-points', { type:'geojson', data: WAYPOINT_GEOJSON.points });
+    map.addLayer({
+      id:'wp-point-layer', type:'circle', source:'wp-points',
+      paint:{ 'circle-radius':4, 'circle-color':'#7FA8E8', 'circle-opacity':0.7,
+              'circle-stroke-color':'#93c5fd', 'circle-stroke-width':1, 'circle-stroke-opacity':0.5 },
+      layout:{ visibility:'none' }
+    });
+  }
+
+  /* ── Layer toggle extensions (corridors, NFZ, waypoints, drones, routeAnim) ── */
+  function bindAirspaceToggles() {
+    /* Exclude #layerToggles (handled by bindLayerToggles) — scope to airspace/traffic sections */
+    var baseContainer = document.getElementById('layerToggles');
+    document.querySelectorAll('.layer-toggle[data-layer]').forEach(function(el) {
+      if (baseContainer && baseContainer.contains(el)) return; /* skip — already bound */
+      el.addEventListener('click', function() {
+        el.classList.toggle('on');
+        var layer = el.dataset.layer;
+        var vis = el.classList.contains('on') ? 'visible' : 'none';
+
+        if (layer === 'corridors') {
+          ['corridor-glow','corridor-main'].forEach(function(id){
+            if (map.getLayer(id)) map.setLayoutProperty(id,'visibility',vis);
+          });
+          document.getElementById('corridorLegend').style.display = vis === 'visible' ? 'flex' : 'none';
+          mapLog('3D flight corridors ' + (vis==='visible'?'ON':'OFF'), vis==='visible'?'ok':'inf');
+        } else if (layer === 'nfz') {
+          ['nfz-fill','nfz-line'].forEach(function(id){
+            if (map.getLayer(id)) map.setLayoutProperty(id,'visibility',vis);
+          });
+          mapLog('No-fly zones ' + (vis==='visible'?'ON':'OFF'), vis==='visible'?'ok':'inf');
+        } else if (layer === 'waypoints') {
+          ['wp-line-layer','wp-point-layer'].forEach(function(id){
+            if (map.getLayer(id)) map.setLayoutProperty(id,'visibility',vis);
+          });
+          mapLog('Waypoint network ' + (vis==='visible'?'ON':'OFF'), vis==='visible'?'ok':'inf');
+        } else if (layer === 'drones') {
+          if (el.classList.contains('on')) startDroneTraffic();
+          else stopDroneTraffic();
+        } else if (layer === 'routeAnim') {
+          if (el.classList.contains('on')) startRouteAnimation();
+          else stopRouteAnimation();
+        }
+      });
+    });
+  }
+
+  /* ── Animated eVTOL / UAV traffic ── */
+  var droneMarkersList = [];
+  var droneAnimId = null;
+
+  var DRONE_FLEET = [
+    { path:[[114.156,22.2880],[114.161,22.2878],[114.167,22.2875],[114.172,22.2873],[114.178,22.2872],[114.183,22.2870],[114.189,22.2868]], t:0.0, speed:0.0035, color:'', alt:95,  id:'EVT-001', label:'eVTOL Logistics' },
+    { path:[[114.189,22.2935],[114.183,22.2937],[114.178,22.2939],[114.172,22.2940],[114.167,22.2940],[114.162,22.2939],[114.156,22.2938]], t:0.3, speed:0.0028, color:'green', alt:65,  id:'UAV-002', label:'UAV Inspection' },
+    { path:[[114.160,22.2870],[114.165,22.2875],[114.171,22.2880],[114.177,22.2883],[114.183,22.2882],[114.188,22.2878]], t:0.6, speed:0.0042, color:'amber', alt:135, id:'EVT-003', label:'eVTOL Express' },
+    { path:[[114.188,22.2920],[114.182,22.2922],[114.176,22.2923],[114.170,22.2923],[114.164,22.2921],[114.158,22.2918]], t:0.1, speed:0.0031, color:'purple',alt:100, id:'UAV-004', label:'UAV Delivery' },
+    { path:[[114.156,22.2855],[114.162,22.2860],[114.169,22.2862],[114.175,22.2860],[114.181,22.2856],[114.187,22.2850]], t:0.8, speed:0.0038, color:'rose',  alt:55,  id:'UAV-005', label:'UAV Survey' },
+  ];
+
+  function startDroneTraffic() {
+    if (droneAnimId) return;
+    DRONE_FLEET.forEach(function(drone) {
+      var el = document.createElement('div');
+      el.className = 'evtol-dot' + (drone.color ? ' ' + drone.color : '');
+      el.title = drone.id + ' · ' + drone.label + ' · Alt ' + drone.alt + 'm';
+      var marker = new maplibregl.Marker({ element: el, anchor: 'center' })
+        .setLngLat(drone.path[0]).addTo(map);
+      droneMarkersList.push({ marker: marker, drone: drone });
+    });
+
+    function tick() {
+      droneMarkersList.forEach(function(item) {
+        var d = item.drone;
+        d.t = (d.t + d.speed) % (d.path.length - 1 + d.speed * 2);
+        if (d.t >= d.path.length - 1) d.t = 0;
+        var idx  = Math.floor(d.t);
+        var frac = d.t - idx;
+        var p1 = d.path[Math.min(idx,   d.path.length-1)];
+        var p2 = d.path[Math.min(idx+1, d.path.length-1)];
+        item.marker.setLngLat([p1[0]+(p2[0]-p1[0])*frac, p1[1]+(p2[1]-p1[1])*frac]);
+      });
+      droneAnimId = requestAnimationFrame(tick);
+    }
+    tick();
+    mapLog('eVTOL / UAV traffic simulation ON — ' + DRONE_FLEET.length + ' aircraft', 'ok');
+  }
+
+  function stopDroneTraffic() {
+    if (droneAnimId) { cancelAnimationFrame(droneAnimId); droneAnimId = null; }
+    droneMarkersList.forEach(function(item){ item.marker.remove(); });
+    droneMarkersList = [];
+    mapLog('Traffic simulation OFF', 'inf');
+  }
+
+  /* ── Route animation (Central Pier → TST) ── */
+  var routeAnimId = null;
+  var routeAnimMarker = null;
+
+  var ANIM_ROUTE = [
+    [114.1600,22.2868], [114.1630,22.2878], [114.1660,22.2888],
+    [114.1690,22.2900], [114.1710,22.2915], [114.1720,22.2930],
+    [114.1720,22.2945], [114.1720,22.2955]
+  ];
+
+  function startRouteAnimation() {
+    if (routeAnimId) return;
+    var el = document.createElement('div');
+    el.className = 'route-anim-dot';
+    routeAnimMarker = new maplibregl.Marker({ element: el, anchor: 'center' })
+      .setLngLat(ANIM_ROUTE[0]).addTo(map);
+
+    /* Dashed route line on map */
+    if (!map.getSource('route-anim-src')) {
+      map.addSource('route-anim-src', { type:'geojson',
+        data:{ type:'Feature', geometry:{ type:'LineString', coordinates:ANIM_ROUTE } } });
+      map.addLayer({ id:'route-anim-line', type:'line', source:'route-anim-src',
+        paint:{ 'line-color':'#8FDCC4', 'line-width':2.5, 'line-opacity':0.55, 'line-dasharray':[6,4] } });
+      map.addLayer({ id:'route-anim-glow', type:'line', source:'route-anim-src',
+        paint:{ 'line-color':'#8FDCC4', 'line-width':8, 'line-opacity':0.12, 'line-blur':6 } });
+    } else {
+      ['route-anim-line','route-anim-glow'].forEach(function(id){ map.setLayoutProperty(id,'visibility','visible'); });
+    }
+
+    var t = 0;
+    function tick() {
+      t = (t + 0.003) % (ANIM_ROUTE.length - 1);
+      var idx = Math.floor(t), frac = t - idx;
+      var p1 = ANIM_ROUTE[idx], p2 = ANIM_ROUTE[Math.min(idx+1, ANIM_ROUTE.length-1)];
+      routeAnimMarker.setLngLat([p1[0]+(p2[0]-p1[0])*frac, p1[1]+(p2[1]-p1[1])*frac]);
+      routeAnimId = requestAnimationFrame(tick);
+    }
+    tick();
+    mapLog('Route animation ON: Central Pier → TST Waterfront', 'ok');
+  }
+
+  function stopRouteAnimation() {
+    if (routeAnimId) { cancelAnimationFrame(routeAnimId); routeAnimId = null; }
+    if (routeAnimMarker) { routeAnimMarker.remove(); routeAnimMarker = null; }
+    ['route-anim-line','route-anim-glow'].forEach(function(id){
+      if (map.getLayer(id)) map.setLayoutProperty(id,'visibility','none');
+    });
+    mapLog('Route animation OFF', 'inf');
+  }
+
+  /* ── Real-time HK Observatory weather ── */
+  function fetchHKOWeather() {
+    var btn = document.getElementById('btnHKOWeather');
+    btn.classList.add('on'); btn.textContent = '🌤 Fetching…';
+    mapLog('Calling HK Observatory API…', 'inf');
+    fetch('https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=rhrread&lang=en')
+      .then(function(r){ return r.json(); })
+      .then(function(data) {
+        var html = '<div class="w-title">🌤 HK Observatory — Live</div>';
+        var hkTemp = null;
+        if (data.temperature && data.temperature.data) {
+          data.temperature.data.forEach(function(s) {
+            if (s.place === 'Hong Kong Observatory') hkTemp = s.value;
+          });
+          if (hkTemp) html += '<div class="w-row"><span>Temperature</span><span class="w-val">' + hkTemp + '°C</span></div>';
+        }
+        if (data.humidity && data.humidity.data && data.humidity.data[0]) {
+          html += '<div class="w-row"><span>Humidity</span><span class="w-val">' + data.humidity.data[0].value + '%</span></div>';
+        }
+        if (data.uvindex) {
+          html += '<div class="w-row"><span>UV Index</span><span class="w-val">' + (data.uvindex.value || '—') + '</span></div>';
+        }
+        var wcard = document.getElementById('weatherCard');
+        wcard.innerHTML = html;
+        wcard.style.display = 'block';
+        btn.textContent = '🌤 HK Observatory Weather ✓';
+        mapLog('HK Observatory data loaded', 'ok');
+      })
+      .catch(function(e) {
+        btn.classList.remove('on'); btn.textContent = '🌤 HK Observatory Weather';
+        mapLog('HK Observatory API failed: ' + e.message, 'err');
+      });
+  }
+
+  /* ── Open-Meteo multi-altitude wind data ── */
+  function fetchWindData() {
+    var btn = document.getElementById('btnWindData');
+    btn.classList.add('on'); btn.textContent = '🌬 Fetching wind…';
+    mapLog('Calling Open-Meteo multi-altitude API…', 'inf');
+    var url = 'https://api.open-meteo.com/v1/forecast?latitude=22.29&longitude=114.17' +
+      '&hourly=wind_speed_10m,wind_speed_80m,wind_speed_120m,' +
+      'wind_direction_10m,wind_direction_80m,wind_direction_120m,wind_gusts_10m' +
+      '&wind_speed_unit=ms&forecast_days=1';
+    fetch(url)
+      .then(function(r){ return r.json(); })
+      .then(function(data) {
+        var h = new Date().getHours();
+        var w10  = data.hourly.wind_speed_10m[h];
+        var w80  = data.hourly.wind_speed_80m[h];
+        var w120 = data.hourly.wind_speed_120m[h];
+        var d80  = data.hourly.wind_direction_80m[h];
+        var gust = data.hourly.wind_gusts_10m[h];
+
+        var safety = 'safe', safeText = '✅ Safe to fly';
+        if (w80 > 10 || gust > 15) { safety = 'warn'; safeText = '⚠️ Caution'; }
+        if (w80 > 15 || gust > 20) { safety = 'danger'; safeText = '❌ No-fly'; }
+
+        var wcard = document.getElementById('weatherCard');
+        wcard.innerHTML =
+          '<div class="w-title">🌬 Wind by Altitude — Open-Meteo</div>' +
+          '<div class="w-row"><span>Layer 1 (10 m)</span><span class="w-val">' + w10.toFixed(1) + ' m/s</span></div>' +
+          '<div class="w-row"><span>Layer 2 (80 m)</span><span class="w-val">' + w80.toFixed(1) + ' m/s · ' + d80 + '°</span></div>' +
+          '<div class="w-row"><span>Layer 3 (120 m)</span><span class="w-val">' + data.hourly.wind_speed_120m[h].toFixed(1) + ' m/s</span></div>' +
+          '<div class="w-row"><span>Gusts (10 m)</span><span class="w-val">' + gust.toFixed(1) + ' m/s</span></div>' +
+          '<div class="w-row" style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.08)"><span>Flight safety</span><span class="w-' + safety + '">' + safeText + '</span></div>';
+        wcard.style.display = 'block';
+
+        mapLog('Wind @ 80m: ' + w80.toFixed(1) + ' m/s ' + d80 + '° · Gust: ' + gust.toFixed(1) + ' m/s', 'ok');
+        btn.textContent = '🌬 Multi-altitude Wind ✓';
+      })
+      .catch(function(e) {
+        btn.classList.remove('on'); btn.textContent = '🌬 Multi-altitude Wind (Open-Meteo)';
+        mapLog('Open-Meteo API failed: ' + e.message, 'err');
+      });
+  }
+
+  /* ── initAirspaceUI ── */
+  function initAirspaceUI() {
+    document.getElementById('btnHKOWeather').addEventListener('click', fetchHKOWeather);
+    document.getElementById('btnWindData').addEventListener('click', fetchWindData);
+    bindAirspaceToggles();
+    mapLog('Digital twin ready — ' + D.sites.length + ' vertiport candidates', 'ok');
+  }
+
+  /* ── initSelectionSystem ── */
+  function initSelectionSystem() {
+    document.getElementById('selModeBtn').addEventListener('click', function() {
+      if (selMode === 'idle') enterSelMode();
+      else if (selMode === 'drawing' || selMode === 'confirm') exitSelMode();
+    });
+    document.getElementById('navCfgBtn').addEventListener('click', function() {
+      if (selMode === 'idle') enterSelMode();
+      else if (selMode === 'drawing' || selMode === 'confirm') exitSelMode();
+    });
+    document.getElementById('selCancelBtn').addEventListener('click', function() { exitSelMode(); });
+    document.getElementById('cfgQuickSite').addEventListener('click', function() {
+      var bbox = SITE_BBOXES[selectedSiteId];
+      if (bbox) {
+        selBbox = bbox;
+        if (_onMapClickSel) { map.off('click', _onMapClickSel); _onMapClickSel = null; }
+        if (_onMapMoveSel)  { map.off('mousemove', _onMapMoveSel); _onMapMoveSel = null; }
+        var canvas = document.querySelector('.maplibregl-canvas');
+        if (canvas) canvas.style.cursor = '';
+        updateSelRectOnMap(selBbox);
+        selMode = 'confirm';
+        document.getElementById('selInstructions').style.display = 'none';
+        document.getElementById('selModeBtn').classList.remove('sel-active');
+        document.getElementById('navCfgBtn').classList.remove('sel-active');
+        showConfirmModal();
+      }
+    });
+    document.getElementById('cfgUseSite').addEventListener('click', function() {
+      var bbox = SITE_BBOXES[selectedSiteId];
+      if (bbox) { selBbox = bbox; updateSelRectOnMap(selBbox); showConfirmModal(); }
+    });
+    document.getElementById('cfgEnterBtn').addEventListener('click', function() {
+      enterCfgMode(selBbox && selBbox.presetLayout);
+    });
+    document.getElementById('cfgCancelBtn').addEventListener('click', function() { exitSelMode(); });
+    document.getElementById('cfgExitBtn').addEventListener('click', function() { exitCfgMode(); });
+  }
+
+  /* ── Boot ── */
+  document.addEventListener('DOMContentLoaded', function() {
+    initMap();
+    renderPlanTabs();
+    renderPersonaTabs();
+    renderCityTabs();
+    updateActiveSiteBadge();
+    renderLeftSiteList();
+    renderRightDetail();
+    bindLayerToggles();
+    initSelectionSystem();
+    initAirspaceUI();
+    map.on('load', function() {
+      renderRightDetail();
+      /* Auto-enter selection mode if launched with ?cfg=1 */
+      if (params.get('cfg') === '1') {
+        setTimeout(function() {
+          var bbox = SITE_BBOXES[selectedSiteId];
+          if (bbox) {
+            selBbox = bbox;
+            updateSelRectOnMap(selBbox);
+            selMode = 'confirm';
+            /* Show confirm modal; cfgEnterBtn will pass bbox.presetLayout */
+            showConfirmModal();
+          } else {
+            enterSelMode();
+          }
+        }, 800);
+      }
+    });
+  });
+
+})();
+
+
+</script>
+  <script src="i18n.js"></script>
+</body>
+</html>
