@@ -1,0 +1,7 @@
+/* 字体放在网站内（原来从 Google Fonts 加载，国内会卡住整个页面） */
+@font-face{font-family:"Inter";font-style:normal;font-weight:300;font-display:swap;src:url("fonts/Inter-Light.woff2") format("woff2")}
+@font-face{font-family:"Inter";font-style:normal;font-weight:400;font-display:swap;src:url("fonts/Inter-Regular.woff2") format("woff2")}
+@font-face{font-family:"Inter";font-style:normal;font-weight:500;font-display:swap;src:url("fonts/Inter-Medium.woff2") format("woff2")}
+@font-face{font-family:"Inter";font-style:normal;font-weight:600;font-display:swap;src:url("fonts/Inter-SemiBold.woff2") format("woff2")}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:400;font-display:swap;src:url("fonts/IBMPlexMono-Regular.woff2") format("woff2")}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:500;font-display:swap;src:url("fonts/IBMPlexMono-Medium.woff2") format("woff2")}
